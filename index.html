@@ -756,7 +756,7 @@ fieldset.roles{border:1px solid var(--line);border-radius:8px;margin:.3rem 0}
   function badge(status) { return el('span', { class: 'badge badge-' + String(status).toLowerCase(), text: status }); }
 
   /** Calls the Apps Script web app (doPost) with fetch. text/plain avoids a CORS preflight. */
-  var API_URL = 'PASTE_YOUR_WEB_APP_EXEC_URL_HERE';   // https://script.google.com/macros/s/XXXX/exec
+  var API_URL = 'https://script.google.com/macros/s/AKfycbxd2Xw_B-M-3jt28kesZwb6Ue8iM2NXsTN6CHPPzBlUFnCGJsEcX6z8el0oeBXaD9VA/exec';   
   function run(name, args) {
     // Every call except sign-in carries the session token; the server decides who you are and what you may do.
     var a = name === 'api_login' ? (args || []) : [S.token].concat(args || []);
