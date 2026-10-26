@@ -1,109 +1,319 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Market Scoping Form System</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f2a52'/%3E%3Ctext x='32' y='42' font-family='Arial' font-size='28' font-weight='700' text-anchor='middle' fill='white'%3EMS%3C/text%3E%3C/svg%3E">
+  <meta name="theme-color" content="#123b65">
+  <title>Market Scoping System</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body {
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      color: #172b4d;
+      background: linear-gradient(135deg, #edf5ff, #f7f9fc);
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: #123b65;
+      color: white;
+      padding: 18px 7%;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 4px 18px rgba(18, 59, 101, 0.15);
+    }
+
+    .brand-icon {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      background: rgba(255,255,255,.14);
+      border-radius: 14px;
+      font-size: 23px;
+    }
+
+    header h1 {
+      font-size: 19px;
+      font-weight: 800;
+    }
+
+    header p {
+      font-size: 12px;
+      margin-top: 5px;
+      color: #d8e7f8;
+    }
+
+    main {
+      flex: 1;
       width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #0a0e1a;
+      max-width: 1100px;
+      margin: auto;
+      padding: 65px 24px;
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 45px;
+      align-items: center;
     }
 
-    iframe {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border: none;
-      display: block;
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 13px;
+      background: #dcecff;
+      color: #1555a0;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 22px;
     }
-    #loader {
-      position: fixed; inset: 0; background: #0a0e1a;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      z-index: 9999; transition: opacity 0.6s ease;
-    }
-    #loader.hidden { opacity: 0; pointer-events: none; }
-    .mark {
-      width: 72px; height: 72px; margin-bottom: 24px; border-radius: 18px;
-      background: #1a56b0; color: #fff; display: grid; place-items: center;
-      font: 700 28px 'Segoe UI', Arial, sans-serif; letter-spacing: 1px;
-    }
-    .spinner {
-      width: 44px; height: 44px; border: 4px solid rgba(59,130,246,0.2);
-      border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    #loader p { color: #94a3b8; margin-top: 18px; font-family: 'Segoe UI', sans-serif; font-size: 14px; letter-spacing: 0.5px; text-align: center; padding: 0 16px; }
-    #loader p.err { color: #fca5a5; }
-  </style>
-</head>
-<body>
-  <div id="loader">
-    <div class="mark" aria-hidden="true">MS</div>
-    <div class="spinner" id="spin"></div>
-    <p id="loadMsg">Loading Market Scoping Form System&hellip;</p>
-  </div>
 
-  <!-- PALITAN ang link sa ibaba ng Web app URL mo (Deploy > Manage deployments > Web app URL, yung nagtatapos sa /exec) -->
-  <iframe
-    id="appFrame"
-    src="https://script.google.com/macros/s/AKfycbxd2Xw_B-M-3jt28kesZwb6Ue8iM2NXsTN6CHPPzBlUFnCGJsEcX6z8el0oeBXaD9VA/exec"
-    
-    title="Market Scoping Form System"
-    allowfullscreen
-    allow="clipboard-write"
-    >
-  </iframe>
+    .intro h2 {
+      font-size: clamp(34px, 5vw, 52px);
+      line-height: 1.15;
+      letter-spacing: -1.8px;
+      margin-bottom: 20px;
+      color: #123b65;
+    }
 
-  <script>
-    (function () {
-      var loader = document.getElementById('loader');
-      var frame = document.getElementById('appFrame');
-      function hideLoader() { loader.classList.add('hidden'); }
+    .intro h2 span {
+      color: #2876c8;
+    }
 
-      // Walang URL pa? Sabihin agad imbes na mag-load nang walang hanggan.
-      if (frame.getAttribute('src').indexOf('PASTE_DEPLOYMENT_ID') !== -1) {
-        document.getElementById('spin').style.display = 'none';
-        var m = document.getElementById('loadMsg');
-        m.className = 'err';
-        m.textContent = 'Setup needed: palitan ang PASTE_DEPLOYMENT_ID sa index.html ng Web app URL ng Apps Script (nagtatapos sa /exec).';
-        return;
+    .intro > p {
+      max-width: 540px;
+      color: #607087;
+      font-size: 15px;
+      line-height: 1.9;
+      margin-bottom: 28px;
+    }
+
+    .open-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: #1769c2;
+      color: white;
+      text-decoration: none;
+      padding: 16px 23px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 8px 20px rgba(23, 105, 194, .22);
+      transition: .2s ease;
+    }
+
+    .open-button:hover {
+      background: #10549e;
+      transform: translateY(-2px);
+    }
+
+    .notice {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      color: #65758b;
+      font-size: 12px;
+      line-height: 1.7;
+      margin-top: 20px;
+      max-width: 460px;
+    }
+
+    .notice i {
+      color: #2876c8;
+      margin-top: 3px;
+    }
+
+    .feature-panel {
+      background: white;
+      padding: 30px;
+      border-radius: 24px;
+      box-shadow: 0 18px 55px rgba(25, 55, 90, .09);
+      border: 1px solid #e8eef6;
+    }
+
+    .feature-panel h3 {
+      font-size: 17px;
+      margin-bottom: 23px;
+      color: #123b65;
+    }
+
+    .feature {
+      display: flex;
+      gap: 15px;
+      align-items: flex-start;
+      padding: 17px 0;
+      border-bottom: 1px solid #edf1f6;
+    }
+
+    .feature:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .feature-icon {
+      flex-shrink: 0;
+      width: 45px;
+      height: 45px;
+      display: grid;
+      place-items: center;
+      border-radius: 13px;
+      background: #eaf3ff;
+      color: #1769c2;
+      font-size: 18px;
+    }
+
+    .feature h4 {
+      font-size: 13px;
+      margin: 2px 0 6px;
+    }
+
+    .feature p {
+      font-size: 12px;
+      color: #758399;
+      line-height: 1.7;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #7b899c;
+      font-size: 11px;
+      border-top: 1px solid #e6edf5;
+      background: rgba(255,255,255,.65);
+    }
+
+    @media (max-width: 760px) {
+      main {
+        grid-template-columns: 1fr;
+        gap: 35px;
+        padding: 45px 20px;
       }
 
-      frame.addEventListener('load', hideLoader);     // nag-load na ang app
-      setTimeout(hideLoader, 20000);                  // fallback
+      .intro h2 {
+        letter-spacing: -1px;
+      }
 
-      // Optional: pinapayagan ang app na mag-save ng session sa sessionStorage ng page na ito
-      // (kailangan ng katumbas na code sa loob ng app para magamit).
-      var KEYS = ['ms_session', 'ms_page'];
-      var ALLOWED = /^https:\/\/([a-z0-9-]+\.)*(googleusercontent\.com|google\.com)$/;
-      window.addEventListener('message', function (e) {
-        if (!ALLOWED.test(e.origin)) return;
-        var d = e.data;
-        if (!d || typeof d.msType !== 'string') return;
-        try {
-          if (d.msType === 'get') {
-            e.source.postMessage({
-              msType: 'state',
-              session: sessionStorage.getItem('ms_session'),
-              page: sessionStorage.getItem('ms_page')
-            }, e.origin);
-          } else if (d.msType === 'save' && KEYS.indexOf(d.key) > -1 && typeof d.value === 'string') {
-            sessionStorage.setItem(d.key, d.value);
-          } else if (d.msType === 'ready') {
-            hideLoader();
-          } else if (d.msType === 'clear') {
-            KEYS.forEach(function (k) { sessionStorage.removeItem(k); });
-          }
-        } catch (err) {}
-      });
-    })();
-  </script>
+      .feature-panel {
+        padding: 24px;
+      }
+
+      header {
+        padding: 16px 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="brand-icon">
+      <i class="fa-solid fa-file-signature"></i>
+    </div>
+    <div>
+      <h1>Market Scoping System</h1>
+      <p>Online Market Scoping and Survey Management</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="intro">
+      <div class="tag">
+        <i class="fa-solid fa-shield-halved"></i>
+        ONLINE MANAGEMENT PORTAL
+      </div>
+
+      <h2>Welcome to the <span>Market Scoping</span> System</h2>
+
+      <p>
+        Access the online system for managing market scoping forms,
+        supplier information, survey records, and related documents
+        through one convenient platform.
+      </p>
+
+      <a
+        class="open-button"
+        href="https://script.google.com/macros/s/AKfycbxd2Xw_B-M-3jt28kesZwb6Ue8iM2NXsTN6CHPPzBlUFnCGJsEcX6z8el0oeBXaD9VA/exec"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+        Open Market Scoping System
+      </a>
+
+      <div class="notice">
+        <i class="fa-solid fa-circle-info"></i>
+        <span>
+          The system opens in a separate tab. Sign in if prompted and
+          use only an account authorized to access the application.
+        </span>
+      </div>
+    </section>
+
+    <section class="feature-panel">
+      <h3>System Features</h3>
+
+      <div class="feature">
+        <div class="feature-icon">
+          <i class="fa-solid fa-file-lines"></i>
+        </div>
+        <div>
+          <h4>Digital Forms</h4>
+          <p>Access and manage market scoping and survey forms online.</p>
+        </div>
+      </div>
+
+      <div class="feature">
+        <div class="feature-icon">
+          <i class="fa-solid fa-database"></i>
+        </div>
+        <div>
+          <h4>Centralized Records</h4>
+          <p>Keep records organized and accessible to authorized users.</p>
+        </div>
+      </div>
+
+      <div class="feature">
+        <div class="feature-icon">
+          <i class="fa-solid fa-pen-to-square"></i>
+        </div>
+        <div>
+          <h4>Document Management</h4>
+          <p>Support the preparation and management of related documents.</p>
+        </div>
+      </div>
+
+      <div class="feature">
+        <div class="feature-icon">
+          <i class="fa-solid fa-laptop"></i>
+        </div>
+        <div>
+          <h4>Convenient Access</h4>
+          <p>Open the application through a browser on supported devices.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Market Scoping System &copy; 2026. For authorized use only.
+  </footer>
 </body>
 </html>
+```
