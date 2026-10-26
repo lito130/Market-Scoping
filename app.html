@@ -756,7 +756,1765 @@ fieldset.roles{border:1px solid var(--line);border-radius:8px;margin:.3rem 0}
   function badge(status) { return el('span', { class: 'badge badge-' + String(status).toLowerCase(), text: status }); }
 
   /** Calls the Apps Script web app (doPost) with fetch. text/plain avoids a CORS preflight. */
+  var API_URL = '<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Market Scoping</title>
+  <style>
+:root{
+  --navy:#0f2a52; --blue:#1a56b0; --blue-d:#134385; --bg:#f2f5fa; --card:#fff; --line:#d3dbe8; --ink:#1b2433; --muted:#5d6b82;
+  --ok:#0b7a3b; --ok-bg:#e3f5ea; --warn:#8a5a00; --warn-bg:#fff3d6; --err:#a3152a; --err-bg:#fde8eb; --info:#0b5cad; --info-bg:#e4effc;
+  --radius:10px; --shadow:0 1px 3px rgba(15,42,82,.12),0 4px 14px rgba(15,42,82,.06);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+[hidden]{display:none!important}
+h1{font-size:1.35rem;margin:0}
+h2{font-size:1.1rem;margin:0 0 .5rem}
+h3{font-size:1rem;margin:0 0 .5rem}
+p{margin:.3rem 0}
+.muted{color:var(--muted)} .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:600}
+.req{color:var(--err)}
+.skip{position:absolute;left:-999px;top:0;background:#fff;padding:.5rem}.skip:focus{left:8px;top:8px;z-index:100}
+.center{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:1rem}
+.spinner{width:30px;height:30px;border:3px solid #cdd8ea;border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---- top bar ---- */
+.topbar{background:var(--navy);color:#fff;position:sticky;top:0;z-index:20;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.topbar-inner{max-width:1100px;margin:0 auto;padding:.55rem 1rem;display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1.2rem}
+.brand{display:flex;align-items:center;gap:.6rem}
+.brand-mark{background:#fff;color:var(--navy);font-weight:800;border-radius:8px;width:36px;height:36px;display:grid;place-items:center;font-size:.9rem}
+.brand-title{font-weight:700;line-height:1.1}.brand-sub{font-size:.72rem;opacity:.8}
+.nav{display:flex;flex-wrap:wrap;gap:.25rem;flex:1}
+.nav-btn{background:transparent;border:0;color:#d9e4f7;padding:.5rem .8rem;border-radius:8px;cursor:pointer;font:inherit;min-height:40px}
+.nav-btn:hover{background:rgba(255,255,255,.12)}
+.nav-btn.active{background:#fff;color:var(--navy);font-weight:700}
+.usercard{text-align:right;font-size:.82rem;line-height:1.25}.user-name{font-weight:700}.user-meta{opacity:.85}
+
+.container{max-width:1100px;margin:0 auto;padding:1rem}
+.view-head{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin-bottom:.75rem;flex-wrap:wrap}
+.badge-line{display:flex;gap:.5rem;align-items:center}
+
+/* ---- cards, tables ---- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:1rem}
+.card.flush{padding:0;overflow:hidden}
+.denied{max-width:480px}
+.toolbar{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.75rem}
+.toolbar input{flex:1;min-width:200px}
+/* Modern data tables */
+.scroll{max-height:60vh;overflow:auto;border:1px solid #e4eaf3;border-radius:14px;background:#fff;box-shadow:0 5px 18px rgba(23,43,77,.045)}
+.tbl{width:100%;border-collapse:separate;border-spacing:0;background:#fff;font-size:.9rem}
+.tbl th{position:sticky;top:0;z-index:2;background:#f4f7fc;text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.065em;color:#52627b;font-weight:750;padding:.9rem 1rem;border-bottom:1px solid #e2e9f3;white-space:nowrap}
+.tbl th:first-child{padding-left:1.15rem}
+.tbl td{padding:.85rem 1rem;border-bottom:1px solid #edf1f7;vertical-align:middle;color:#273449;transition:background .16s ease}
+.tbl tbody tr:nth-child(even){background:#fbfcfe}
+.tbl tbody tr:last-child td{border-bottom:0}
+.tbl tbody tr.click{cursor:pointer}
+.tbl tbody tr:hover td{background:#f0f6ff}
+.tbl tbody tr.click:focus-within td{background:#edf5ff}
+.tbl td .btn{border-radius:8px}
+.tbl .det{max-width:380px;word-break:break-word;font-size:.84rem;color:#52627b;line-height:1.5}
+.empty{padding:2rem 1.2rem;text-align:center;color:var(--muted);background:#fff}
+.table-pagination{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;padding:.85rem 1rem;border-top:1px solid #e8edf5;background:linear-gradient(180deg,#fff,#f9fbfe);font-size:.82rem;color:#64748b}
+.table-pagination .page-actions{display:flex;align-items:center;gap:.35rem;flex-wrap:wrap}
+.table-pagination button{min-height:34px;min-width:36px;padding:.25rem .65rem;border:1px solid #dce4ef;border-radius:9px;background:#fff;color:#34445d;cursor:pointer;font:inherit;font-weight:600;transition:background .15s,border-color .15s,transform .15s}
+.table-pagination button:hover:not(:disabled){background:#edf4ff;border-color:#9bbcf0;color:#164da1;transform:translateY(-1px)}
+.table-pagination button.active{background:linear-gradient(135deg,#2563eb,#1749b5);border-color:#2563eb;color:#fff;font-weight:750;box-shadow:0 3px 8px rgba(37,99,235,.22)}
+.table-pagination button:disabled{opacity:.4;cursor:not-allowed;transform:none}
+@media(max-width:700px){.scroll{border-radius:11px}.table-pagination{align-items:flex-start;flex-direction:column;padding:.75rem}.tbl th{font-size:.68rem;padding:.7rem .65rem}.tbl td{padding:.7rem .65rem}}
+
+/* ---- badges, alerts, buttons ---- */
+.badge{display:inline-block;padding:.15rem .6rem;border-radius:999px;font-size:.75rem;font-weight:700;border:1px solid transparent}
+.badge-draft{background:#eef1f6;color:#44526b;border-color:#cfd7e4}
+.badge-submitted{background:var(--info-bg);color:var(--info);border-color:#b9d3f3}
+.badge-approved{background:var(--ok-bg);color:var(--ok);border-color:#a8dbbb}
+.badge-returned{background:var(--warn-bg);color:var(--warn);border-color:#ecd18c}
+.badge-active{background:var(--ok-bg);color:var(--ok)}.badge-inactive{background:#eee;color:#666}
+.alert{border-radius:var(--radius);padding:.75rem 1rem;margin-bottom:.75rem;border:1px solid}
+.alert-error{background:var(--err-bg);border-color:#f2b8c0;color:var(--err)}
+.alert-warn{background:var(--warn-bg);border-color:#ecd18c;color:var(--warn)}
+.alert ul{margin:.3rem 0 0 1.1rem;padding:0}
+.btn{font:inherit;min-height:42px;padding:.45rem 1rem;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+.btn:hover{background:#f1f5fb}.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.nav-btn:focus-visible{outline:3px solid #8ab4f8;outline-offset:1px}
+.btn-primary{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}.btn-primary:hover{background:var(--blue-d)}
+.btn-warn{background:#b26a00;border-color:#b26a00;color:#fff;font-weight:600}.btn-warn:hover{background:#8f5500}
+.btn-danger{color:var(--err);border-color:#e7aab3}.btn-danger:hover{background:var(--err-bg)}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--blue)}
+.btn-sm{min-height:34px;padding:.25rem .7rem;font-size:.85rem}
+.btn[disabled]{opacity:.55;cursor:not-allowed}
+
+/* ---- inputs ---- */
+input,select,textarea{font:inherit;width:100%;min-height:42px;padding:.45rem .6rem;border:1px solid #b9c5d9;border-radius:8px;background:#fff;color:var(--ink)}
+textarea{resize:vertical;min-height:80px}
+input[type=checkbox]{width:20px;height:20px;min-height:0;accent-color:var(--blue)}
+input:disabled,select:disabled,textarea:disabled{background:#f4f6fa;color:#2a3344;border-color:#dde3ee;-webkit-text-fill-color:#2a3344;opacity:1}
+.invalid{border-color:var(--err)!important;background:#fff6f7!important}
+label{font-weight:600;font-size:.9rem}
+.stack{display:flex;flex-direction:column;gap:.45rem}
+.chk-line{display:flex;gap:.6rem;align-items:flex-start;font-weight:400;margin:.35rem 0}.chk-line input{margin-top:.15rem;flex:none}
+
+/* ---- the form (mirrors the paper layout) ---- */
+.paper{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.2rem 1.2rem 1.5rem;margin-bottom:5rem}
+.paper-meta{font-size:.8rem;color:var(--muted);text-align:right;min-height:1em}
+.paper-title{text-align:center;font-size:1.5rem;letter-spacing:.08em;margin:.2rem 0 1rem}
+.paper-foot{text-align:center;font-size:.78rem;color:var(--muted);margin-top:1.2rem;font-style:italic}
+.sect{border:1px solid var(--line);border-radius:var(--radius);margin:0 0 1rem;padding:.8rem 1rem 1rem}
+.sect legend{font-weight:800;padding:0 .5rem;color:var(--navy);font-size:.95rem}
+.legend-note{font-weight:400;font-size:.8rem;color:var(--muted)}
+.kv{display:grid;grid-template-columns:minmax(200px,34%) 1fr;gap:.4rem .8rem;align-items:center;margin:.55rem 0}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.intro{font-size:.82rem;color:var(--muted);text-align:justify;margin-bottom:.6rem}
+
+.grid-head{display:grid;gap:.6rem;background:#dde6f3;font-weight:700;font-size:.8rem;padding:.5rem .6rem;border-radius:8px 8px 0 0;text-align:center}
+.act-grid,.act-row{grid-template-columns:70px 1fr 28%}
+.res-grid,.res-row{grid-template-columns:30% 15% 1fr}
+.act-row,.res-row{display:grid;gap:.6rem;padding:.6rem;border:1px solid var(--line);border-top:0;align-items:start}
+.act-row:last-child,.res-row:last-child{border-radius:0 0 8px 8px}
+.act-row .chk{display:flex;justify-content:center;padding-top:.45rem}
+.act-label{font-size:.9rem}.act-label input{margin-top:.4rem}
+.res-param strong{font-size:.9rem}.res-param .hint,.hint{font-size:.78rem;color:var(--muted);font-weight:400}
+.cell-label{display:none;font-size:.72rem;font-weight:700;text-transform:uppercase;color:var(--muted)}
+
+/* ---- signatures ---- */
+.sigs{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1.2rem}
+.sig-panel{border:1px solid var(--line);border-radius:var(--radius);padding:.9rem;background:#fbfcfe}
+.pad{display:block;width:100%;aspect-ratio:3/1;background:#fff;border:2px dashed #8aa0c4;border-radius:8px;touch-action:none;cursor:crosshair}
+.pad-tools{display:flex;align-items:center;gap:.6rem;margin:.4rem 0;flex-wrap:wrap}
+.sig-img{min-height:90px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #222;margin-bottom:.4rem;background:#fff;border-radius:6px}
+.sig-img img{max-width:100%;max-height:110px}
+.sig-pending{min-height:90px;display:grid;place-items:center;color:var(--muted);font-style:italic;border:1px dashed var(--line);border-radius:8px;background:#fff}
+.sig-name{font-weight:800;text-transform:uppercase;text-decoration:underline;margin-top:.6rem}
+.sig-desig{margin:0}.sig-note{font-size:.76rem;color:var(--muted)}
+
+/* ---- sticky action bar ---- */
+.actionbar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);box-shadow:0 -4px 14px rgba(15,42,82,.1);display:flex;flex-wrap:wrap;gap:.5rem;padding:.6rem 1rem;z-index:15;justify-content:center}
+.actionbar .spacer{flex:1}
+
+/* ---- modals / toast / busy ---- */
+.modal{position:fixed;inset:0;background:rgba(10,20,40,.55);display:flex;align-items:center;justify-content:center;z-index:60;padding:.8rem}
+.modal-box{background:#fff;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.35);padding:1.2rem;width:100%;max-height:92vh;overflow:auto}
+.modal-box.small{max-width:480px}.modal-box.wide{max-width:960px}
+.modal-head{display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-bottom:.6rem;flex-wrap:wrap}
+.modal-actions{display:flex;justify-content:flex-end;gap:.5rem;margin-top:1rem;flex-wrap:wrap}
+#print-frame{width:100%;height:68vh;border:1px solid var(--line);border-radius:8px;background:#fff}
+fieldset.roles{border:1px solid var(--line);border-radius:8px;margin:.3rem 0}
+.busy{position:fixed;inset:0;background:rgba(255,255,255,.7);z-index:80;display:flex;align-items:center;justify-content:center;gap:.7rem;font-weight:600}
+.toast-host{position:fixed;top:.8rem;right:.8rem;left:.8rem;display:flex;flex-direction:column;align-items:flex-end;gap:.5rem;z-index:90;pointer-events:none}
+.toast{pointer-events:auto;max-width:460px;background:var(--navy);color:#fff;padding:.7rem 1rem;border-radius:10px;box-shadow:var(--shadow);white-space:pre-line}
+.toast.ok{background:var(--ok)}.toast.err{background:var(--err)}
+.noscript{padding:2rem;text-align:center}
+
+
+/* ---- login & password UI ---- */
+.login{width:100%;max-width:400px;text-align:left;display:flex;flex-direction:column;gap:.5rem;padding:1.4rem}
+.login-brand{text-align:center;margin-bottom:.4rem}
+.brand-mark.big{width:52px;height:52px;font-size:1.2rem;margin:0 auto .5rem;background:var(--navy);color:#fff}
+.pw-wrap{display:flex;gap:.4rem}.pw-wrap .btn{flex:none;min-width:72px}
+#btn-login{margin-top:.5rem}
+.user-links{margin-top:.15rem}
+.link-btn{background:none;border:0;color:#bcd2f7;text-decoration:underline;cursor:pointer;font:inherit;font-size:.78rem;padding:.15rem .3rem;min-height:30px}
+.link-btn:hover{color:#fff}
+.temp-box{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:1.5rem;letter-spacing:.08em;text-align:center;background:#f1f5fb;border:2px dashed #8aa0c4;border-radius:10px;padding:.9rem;margin:.6rem 0;user-select:all;word-break:break-all}
+.modal-actions .spacer{flex:1}
+#modal-chpw{z-index:65}#modal-confirm{z-index:70}#modal-temp{z-index:75}
+
+
+/* ---- market survey ---- */
+.badge-signed{background:var(--ok-bg);color:var(--ok);border-color:#a8dbbb}
+.sv-head{text-align:center;margin-bottom:.8rem}
+.sv-head input.sv-center{text-align:center;max-width:560px;margin:.2rem auto;display:block}
+.sv-strong{font-weight:800}
+.sv-head .paper-title{border-bottom:0;padding-bottom:0;margin:.9rem 0 .6rem}
+.ms-paper-title{border-bottom:2px solid #4f81bd;padding-bottom:.6rem;margin:.2rem 0 1rem}
+.sv-asof{display:flex;align-items:center;justify-content:center;gap:.5rem;font-weight:600}
+.sv-asof input{max-width:260px}
+.sv-grid{display:grid;grid-template-columns:60px 1fr repeat(3,minmax(110px,160px)) 38px;gap:.5rem;align-items:start}
+.sv-thead{background:#f2f2f2;border:1px solid var(--line);border-radius:8px 8px 0 0;padding:.5rem .6rem;font-weight:700;font-size:.82rem;text-align:center;align-items:center}
+.sv-thead input{text-align:center;font-weight:700}
+.sv-row{padding:.6rem;border:1px solid var(--line);border-top:0}
+.sv-no{text-align:center;padding-top:.6rem;font-weight:700}
+.sv-price{text-align:right;font-weight:700}
+.sv-del{min-height:34px;padding:.2rem;margin-top:.3rem}
+.sv-add{margin:.6rem 0 .2rem}
+.sv-cert{margin:1.1rem 0;text-align:justify;line-height:2.3}
+.sv-cert input.sv-inline{display:inline-block;width:auto;min-width:220px;max-width:100%;font-weight:700;text-align:center;vertical-align:baseline}
+.sv-sig{max-width:480px;margin-top:1rem}
+@media (max-width:820px){
+  .sv-grid{grid-template-columns:1fr 1fr 1fr}
+  .sv-thead span{display:none}
+  .sv-no,.sv-specwrap,.sv-del{grid-column:1/-1}
+  .sv-no{text-align:left;padding-top:0}
+  .sv-del{justify-self:end}
+}
+
+/* ---- tablets & phones ---- */
+@media (max-width:820px){
+  .kv{grid-template-columns:1fr}
+  .usercard{text-align:left;width:100%}
+  .sigs{grid-template-columns:1fr}
+}
+@media (max-width:700px){
+  .grid-head{display:none}
+  .act-row,.res-row{grid-template-columns:1fr;border-top:1px solid var(--line);border-radius:8px;margin-bottom:.6rem}
+  .act-row .chk{justify-content:flex-start;padding-top:0}
+  .cell-label{display:block;margin-bottom:.15rem}
+  .split{grid-template-columns:1fr}
+  .paper{padding:.8rem}
+  .tbl thead{display:none}
+  .tbl,.tbl tbody,.tbl tr,.tbl td{display:block;width:100%}
+  .tbl tr{border-top:1px solid var(--line);padding:.5rem .3rem}
+  .tbl td{border:0;padding:.2rem .6rem;display:flex;gap:.6rem}
+  .tbl td::before{content:attr(data-label);flex:0 0 96px;font-size:.72rem;font-weight:700;text-transform:uppercase;color:var(--muted);padding-top:.15rem}
+  .actionbar .btn{flex:1 1 45%}
+  .actionbar .spacer{display:none}
+  .toast-host{align-items:stretch}
+}
+@media print{.topbar,.actionbar,.toolbar,.nav,.toast-host{display:none!important}.paper{box-shadow:none;border:0}}
+@media (prefers-reduced-motion:reduce){.spinner{animation-duration:2s}}
+
+/* ---- table pagination ---- */
+</style>
+
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<!-- ============ Loading / access screens ============ -->
+<div id="screen-loading" class="screen center">
+  <div class="spinner" aria-hidden="true"></div>
+  <p>Loading&hellip;</p>
+</div>
+
+<!-- ============ Login ============ -->
+<div id="screen-login" class="screen center" hidden>
+  <form class="card login" id="login-form" novalidate>
+    <div class="login-brand">
+      <span class="brand-mark big" aria-hidden="true">MS</span>
+      <h1>Market Scoping</h1>
+      <p class="muted">RA 12009 &middot; Section 10</p>
+    </div>
+    <div id="login-error" class="alert alert-error" role="alert" hidden></div>
+    <label for="login-email">Email</label>
+    <input id="login-email" type="email" autocomplete="username" inputmode="email" autocapitalize="off" spellcheck="false" maxlength="150" required>
+    <label for="login-password">Password</label>
+    <div class="pw-wrap">
+      <input id="login-password" type="password" autocomplete="current-password" maxlength="200" required>
+      <button type="button" class="btn" id="btn-show-pw" aria-label="Show or hide password">Show</button>
+    </div>
+    <button type="submit" class="btn btn-primary" id="btn-login">Sign in</button>
+    <p class="hint">Your role (Admin, Preparer or Approver) is detected automatically after you sign in. Forgot your password? Ask an Admin to reset it.</p>
+  </form>
+</div>
+
+<div id="screen-denied" class="screen center" hidden>
+  <div class="card denied">
+    <h1>System unavailable</h1>
+    <p id="denied-msg"></p>
+    <p class="muted" id="denied-email"></p>
+  </div>
+</div>
+
+<!-- ============ Main application ============ -->
+<div id="screen-app" hidden>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">MS</span>
+        <div>
+          <div class="brand-title">Market Scoping</div>
+          <div class="brand-sub" id="brand-sub">RA 12009 &middot; Section 10</div>
+        </div>
+      </div>
+      <nav class="nav" aria-label="Main">
+        <button type="button" class="nav-btn" data-nav="list">Forms</button>
+        <button type="button" class="nav-btn" data-nav="surveys">Market survey</button>
+        <button type="button" class="nav-btn" data-nav="new" id="nav-new" hidden>New form</button>
+        <button type="button" class="nav-btn" data-nav="users" id="nav-users" hidden>Users</button>
+        <button type="button" class="nav-btn" data-nav="audit" id="nav-audit" hidden>Audit log</button>
+      </nav>
+      <div class="usercard">
+        <div class="user-name" id="user-name"></div>
+        <div class="user-meta"><span id="user-roles"></span></div>
+        <div class="user-links">
+          <button type="button" class="link-btn" id="btn-chpw">Change password</button>
+          <button type="button" class="link-btn" id="btn-logout">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="container">
+
+    <!-- ===== FORMS LIST ===== -->
+    <section id="view-list" class="view" hidden>
+      <div class="view-head">
+        <h1>Market Scoping Forms</h1>
+        <button type="button" class="btn btn-primary" id="btn-new" hidden>+ New form</button>
+      </div>
+      <div class="toolbar">
+        <input type="search" id="list-search" placeholder="Search project, entity, form ID&hellip;" aria-label="Search forms">
+        <select id="list-status" aria-label="Filter by status">
+          <option value="">All statuses</option>
+          <option>Draft</option><option>Submitted</option><option>Approved</option><option>Returned</option>
+        </select>
+        <button type="button" class="btn" id="btn-refresh">Refresh</button>
+      </div>
+      <div class="card flush">
+        <table class="tbl" id="list-table">
+          <thead>
+            <tr><th>Form ID</th><th>Project</th><th>Budget</th><th>Prepared by</th><th>Status</th><th>Last updated</th></tr>
+          </thead>
+          <tbody id="list-body"></tbody>
+        </table>
+        <p class="empty" id="list-empty" hidden>No forms to show.</p>
+      </div>
+    </section>
+
+    <!-- ===== FORM (mirrors the Market Scoping Form layout) ===== -->
+    <section id="view-form" class="view" hidden>
+      <div class="view-head">
+        <button type="button" class="btn btn-ghost" id="btn-back">&larr; Back to list</button>
+        <div class="badge-line"><span id="form-id-label" class="mono"></span> <span id="form-status" class="badge"></span></div>
+      </div>
+
+      <div id="form-errors" class="alert alert-error" role="alert" hidden></div>
+      <div id="returned-alert" class="alert alert-warn" hidden></div>
+
+      <form id="ms-form" class="paper" novalidate autocomplete="off">
+        <p class="paper-meta" id="form-meta"></p>
+        <h2 class="paper-title ms-paper-title">MARKET SCOPING</h2>
+
+        <fieldset class="sect">
+          <legend>AGENCY INFORMATION</legend>
+          <div class="kv">
+            <label for="f-procuringEntity">Name of Procuring Entity <b class="req">*</b></label>
+            <input id="f-procuringEntity" maxlength="200" required>
+          </div>
+          <div class="kv">
+            <label for="f-endUser">End-User/Implementing Unit <b class="req">*</b></label>
+            <input id="f-endUser" maxlength="200" required>
+          </div>
+          <div class="kv">
+            <label for="f-repName">Name &amp; Designation of Representative <b class="req">*</b></label>
+            <div class="split">
+              <input id="f-repName" maxlength="150" placeholder="Full name" aria-label="Representative name" required>
+              <input id="f-repDesignation" maxlength="150" placeholder="Designation" aria-label="Representative designation" required>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="sect">
+          <legend>PROJECT OVERVIEW</legend>
+          <div class="kv">
+            <label for="f-projectName">Project Name <b class="req">*</b></label>
+            <input id="f-projectName" maxlength="300" required>
+          </div>
+          <div class="kv">
+            <label for="f-budget">Estimated Budget (&#8369;) <b class="req">*</b></label>
+            <input id="f-budget" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" required>
+          </div>
+          <div class="kv">
+            <label for="f-periodFrom">Period of Market Scoping [From (mm/yyyy) To (mm/yyyy)] <b class="req">*</b></label>
+            <div class="split">
+              <input id="f-periodFrom" maxlength="7" inputmode="numeric" placeholder="From  mm/yyyy" aria-label="Period from (mm/yyyy)" required>
+              <input id="f-periodTo" maxlength="7" inputmode="numeric" placeholder="To  mm/yyyy" aria-label="Period to (mm/yyyy)" required>
+            </div>
+          </div>
+          <div class="kv">
+            <label for="f-deliveryDate">Expected Date of Delivery (mm/yyyy) <b class="req">*</b></label>
+            <input id="f-deliveryDate" maxlength="100" placeholder="e.g. 09/2026 or September 28-30, 2026" required>
+          </div>
+        </fieldset>
+
+        <fieldset class="sect">
+          <legend>MARKET SCOPING ACTIVITY/IES CONDUCTED <span class="legend-note">(Check all that apply)</span></legend>
+          <p class="intro" id="intro-activities"></p>
+          <div class="grid-head act-grid" aria-hidden="true"><span>Check (&#10003;)</span><span>Activity/ies Conducted</span><span>Documentation (as may be applicable)</span></div>
+          <div id="activities-body"></div>
+        </fieldset>
+
+        <fieldset class="sect">
+          <legend>MARKET SCOPING RESULTS</legend>
+          <p class="intro" id="intro-results"></p>
+          <div class="grid-head res-grid" aria-hidden="true"><span>Parameters</span><span>Considered? (Yes/No/ Not Applicable)</span><span>Recommendations based on the Market Scoping</span></div>
+          <div id="results-body"></div>
+        </fieldset>
+
+        <!-- ===== Signatures: kept completely separate ===== -->
+        <div class="sigs">
+          <section class="sig-panel" aria-labelledby="h-prep">
+            <h3 id="h-prep">Prepared by:</h3>
+            <div id="prep-sign" hidden>
+              <canvas id="pad-prepared" class="pad" aria-label="Signature pad for Prepared by. Draw with mouse, finger or stylus."></canvas>
+              <div class="pad-tools">
+                <button type="button" class="btn btn-sm" id="btn-clear-prep">Clear signature</button>
+                <button type="button" class="btn btn-sm" id="btn-saved-prep">Use my saved signature</button>
+                <button type="button" class="btn btn-sm" id="btn-upload-prep">Upload signature image</button>
+                <button type="button" class="btn btn-sm" id="btn-keep-prep">Save to my profile</button>
+                <input type="file" id="file-prep" accept="image/png,image/jpeg,image/webp" hidden>
+                <span class="hint">Sign above using a mouse, finger or stylus.</span>
+              </div>
+              <label class="chk-line"><input type="checkbox" id="chk-prep"> <span>I certify that I am <b id="prep-who"></b> and that the information in this form is true and correct.</span></label>
+            </div>
+            <div id="prep-view" hidden><div class="sig-img"><img id="prep-img" alt="Prepared by signature"></div></div>
+            <div id="prep-pending" class="sig-pending" hidden>Not yet signed.</div>
+            <p class="sig-name" id="prep-name"></p>
+            <p class="sig-desig" id="prep-desig"></p>
+            <p class="sig-note" id="prep-note"></p>
+          </section>
+
+          <section class="sig-panel" aria-labelledby="h-appr">
+            <h3 id="h-appr">Approved by:</h3>
+            <div id="appr-sign" hidden>
+              <canvas id="pad-approved" class="pad" aria-label="Signature pad for Approved by. Draw with mouse, finger or stylus."></canvas>
+              <div class="pad-tools">
+                <button type="button" class="btn btn-sm" id="btn-clear-appr">Clear signature</button>
+                <button type="button" class="btn btn-sm" id="btn-saved-appr">Use my saved signature</button>
+                <button type="button" class="btn btn-sm" id="btn-upload-appr">Upload signature image</button>
+                <button type="button" class="btn btn-sm" id="btn-keep-appr">Save to my profile</button>
+                <input type="file" id="file-appr" accept="image/png,image/jpeg,image/webp" hidden>
+                <span class="hint">Sign above using a mouse, finger or stylus.</span>
+              </div>
+              <label class="chk-line"><input type="checkbox" id="chk-appr"> <span>I certify that I am <b id="appr-who"></b> and I approve this Market Scoping form.</span></label>
+            </div>
+            <div id="appr-view" hidden><div class="sig-img"><img id="appr-img" alt="Approved by signature"></div></div>
+            <div id="appr-pending" class="sig-pending" hidden>Awaiting approval.</div>
+            <p class="sig-name" id="appr-name"></p>
+            <p class="sig-desig" id="appr-desig"></p>
+            <p class="sig-note" id="appr-note"></p>
+          </section>
+        </div>
+
+        <p class="paper-foot">Market Scoping Checklist &middot; <span id="form-rev"></span></p>
+      </form>
+
+      <div class="actionbar" id="actionbar">
+        <button type="button" class="btn btn-ghost" id="btn-history" hidden>History</button>
+        <button type="button" class="btn" id="btn-print" hidden>Print preview</button>
+        <button type="button" class="btn" id="btn-pdf" hidden>Download PDF</button>
+        <span class="spacer"></span>
+        <button type="button" class="btn btn-danger" id="btn-delete" hidden>Delete draft</button>
+        <button type="button" class="btn" id="btn-save" hidden>Save draft</button>
+        <button type="button" class="btn btn-primary" id="btn-submit" hidden>Sign &amp; submit for approval</button>
+        <button type="button" class="btn btn-warn" id="btn-return" hidden>Return for revision</button>
+        <button type="button" class="btn btn-primary" id="btn-approve" hidden>Approve &amp; sign</button>
+      </div>
+    </section>
+
+    <!-- ===== MARKET SURVEY LIST ===== -->
+    <section id="view-surveys" class="view" hidden>
+      <div class="view-head">
+        <h1>Market Surveys</h1>
+        <button type="button" class="btn btn-primary" id="btn-new-survey" hidden>+ New survey</button>
+      </div>
+      <div class="toolbar">
+        <input type="search" id="sv-search" placeholder="Search specification, survey ID&hellip;" aria-label="Search surveys">
+        <select id="sv-status" aria-label="Filter by status">
+          <option value="">All statuses</option>
+          <option>Draft</option><option>Signed</option>
+        </select>
+        <button type="button" class="btn" id="btn-sv-refresh">Refresh</button>
+      </div>
+      <div class="card flush">
+        <table class="tbl" id="sv-table">
+          <thead>
+            <tr><th>Survey ID</th><th>Specification</th><th>As of</th><th>Surveyed by</th><th>Status</th><th>Last updated</th></tr>
+          </thead>
+          <tbody id="sv-list-body"></tbody>
+        </table>
+        <p class="empty" id="sv-empty" hidden>No market surveys to show.</p>
+      </div>
+    </section>
+
+    <!-- ===== MARKET SURVEY FORM (mirrors the Market Survey Form layout) ===== -->
+    <section id="view-survey" class="view" hidden>
+      <div class="view-head">
+        <button type="button" class="btn btn-ghost" id="btn-sv-back">&larr; Back to list</button>
+        <div class="badge-line"><span id="sv-id-label" class="mono"></span> <span id="sv-status-badge" class="badge"></span></div>
+      </div>
+
+      <div id="survey-errors" class="alert alert-error" role="alert" hidden></div>
+
+      <form id="sv-form" class="paper" novalidate autocomplete="off">
+        <p class="paper-meta" id="sv-meta"></p>
+
+        <div class="sv-head">
+          <input id="sv-agency" maxlength="200" class="sv-center sv-strong" aria-label="Agency" placeholder="Agency">
+          <input id="sv-office" maxlength="200" class="sv-center" aria-label="Office" placeholder="Office">
+          <h2 class="paper-title">MARKET SURVEY FORM</h2>
+          <div class="sv-asof"><span>As of</span><input id="sv-asOf" maxlength="60" class="sv-center" placeholder="e.g. September 2026" aria-label="As of (month and year)"></div>
+        </div>
+
+        <div class="sv-grid sv-thead">
+          <span>Item No.</span>
+          <span>Specifications</span>
+          <input id="sv-sup0" maxlength="100" placeholder="Supplier 1" aria-label="Supplier 1 name">
+          <input id="sv-sup1" maxlength="100" placeholder="Supplier 2" aria-label="Supplier 2 name">
+          <input id="sv-sup2" maxlength="100" placeholder="Supplier 3" aria-label="Supplier 3 name">
+          <span></span>
+        </div>
+        <div id="sv-items"></div>
+        <button type="button" class="btn btn-sm sv-add" id="btn-sv-add">+ Add item</button>
+
+        <p class="sv-cert"><span id="sv-certA"></span><input id="sv-surveyDate" maxlength="60" class="sv-inline" placeholder="e.g. September 2026" aria-label="Date the Market Survey was conducted"><span id="sv-certB"></span></p>
+
+        <section class="sig-panel sv-sig" aria-labelledby="h-sv">
+          <h3 id="h-sv">Signature over Printed Name:</h3>
+          <div id="sv-sign" hidden>
+            <canvas id="pad-survey" class="pad" aria-label="Signature pad. Draw with mouse, finger or stylus."></canvas>
+            <div class="pad-tools">
+              <button type="button" class="btn btn-sm" id="btn-clear-sv">Clear signature</button>
+              <button type="button" class="btn btn-sm" id="btn-saved-sv">Use my saved signature</button>
+              <button type="button" class="btn btn-sm" id="btn-upload-sv">Upload signature image</button>
+              <button type="button" class="btn btn-sm" id="btn-keep-sv">Save to my profile</button>
+              <input type="file" id="file-sv" accept="image/png,image/jpeg,image/webp" hidden>
+              <span class="hint">Sign above using a mouse, finger or stylus.</span>
+            </div>
+            <label class="chk-line"><input type="checkbox" id="chk-sv"> <span>I certify that I am <b id="sv-who"></b> and that the information in this Market Survey is true and correct.</span></label>
+          </div>
+          <div id="sv-sigview" hidden><div class="sig-img"><img id="sv-sig-img" alt="Signature"></div></div>
+          <div id="sv-sigpending" class="sig-pending" hidden>Not yet signed.</div>
+          <p class="sig-name" id="sv-name"></p>
+          <p class="sig-desig" id="sv-desig"></p>
+          <p class="sig-note" id="sv-note"></p>
+        </section>
+
+        <p class="paper-foot">Market Survey Form</p>
+      </form>
+
+      <div class="actionbar" id="sv-actionbar">
+        <button type="button" class="btn btn-ghost" id="btn-sv-history" hidden>History</button>
+        <button type="button" class="btn" id="btn-sv-print" hidden>Print preview</button>
+        <button type="button" class="btn" id="btn-sv-pdf" hidden>Download PDF</button>
+        <span class="spacer"></span>
+        <button type="button" class="btn btn-danger" id="btn-sv-delete" hidden>Delete draft</button>
+        <button type="button" class="btn" id="btn-sv-save" hidden>Save draft</button>
+        <button type="button" class="btn btn-primary" id="btn-sv-sign" hidden>Sign &amp; certify</button>
+      </div>
+    </section>
+
+    <!-- ===== USERS (Admin) ===== -->
+    <section id="view-users" class="view" hidden>
+      <div class="view-head">
+        <h1>Users &amp; roles</h1>
+        <button type="button" class="btn btn-primary" id="btn-add-user">+ Add user</button>
+      </div>
+      <p class="muted">Only the active users listed here can sign in. Names and designations are printed under signatures.</p>
+      <div class="card flush">
+        <table class="tbl" id="users-table">
+          <thead><tr><th>Name</th><th>Email</th><th>Designation</th><th>Roles</th><th>Status</th><th></th></tr></thead>
+          <tbody id="users-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===== AUDIT LOG (Admin) ===== -->
+    <section id="view-audit" class="view" hidden>
+      <div class="view-head"><h1>Audit log</h1></div>
+      <div class="toolbar">
+        <input id="audit-form" placeholder="Filter by Form ID (e.g. MS-2026-0001 or MSV-2026-0001)" aria-label="Form ID filter">
+        <select id="audit-limit" aria-label="Rows">
+          <option value="100">Last 100</option><option value="200" selected>Last 200</option><option value="500">Last 500</option><option value="1000">Last 1000</option>
+        </select>
+        <button type="button" class="btn" id="btn-audit-refresh">Refresh</button>
+        <button type="button" class="btn" id="btn-audit-verify">Verify integrity</button>
+        <span id="audit-verify-result" class="muted"></span>
+      </div>
+      <div class="card flush">
+        <table class="tbl" id="audit-table">
+          <thead><tr><th>When</th><th>Who</th><th>Action</th><th>Form</th><th>Details</th></tr></thead>
+          <tbody id="audit-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ============ Modals ============ -->
+<div class="modal" id="modal-confirm" hidden role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+  <div class="modal-box small">
+    <h2 id="confirm-title">Confirm</h2>
+    <p id="confirm-text"></p>
+    <div class="modal-actions">
+      <button type="button" class="btn" id="confirm-cancel">Cancel</button>
+      <button type="button" class="btn btn-primary" id="confirm-ok">OK</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal-return" hidden role="dialog" aria-modal="true" aria-labelledby="return-title">
+  <div class="modal-box small">
+    <h2 id="return-title">Return for revision</h2>
+    <p>The preparer will see your remarks and must correct, re-sign and resubmit the form.</p>
+    <label for="return-remarks">Remarks <b class="req">*</b></label>
+    <textarea id="return-remarks" rows="4" maxlength="1000"></textarea>
+    <div class="modal-actions">
+      <button type="button" class="btn" data-close>Cancel</button>
+      <button type="button" class="btn btn-warn" id="return-ok">Return form</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal-print" hidden role="dialog" aria-modal="true" aria-labelledby="print-title">
+  <div class="modal-box wide">
+    <div class="modal-head"><h2 id="print-title">Print preview</h2>
+      <div><button type="button" class="btn btn-primary" id="print-now">Print</button> <button type="button" class="btn" data-close>Close</button></div>
+    </div>
+    <iframe id="print-frame" title="Printable form" sandbox="allow-same-origin allow-modals"></iframe>
+  </div>
+</div>
+
+<div class="modal" id="modal-history" hidden role="dialog" aria-modal="true" aria-labelledby="history-title">
+  <div class="modal-box wide">
+    <div class="modal-head"><h2 id="history-title">Form history</h2><button type="button" class="btn" data-close>Close</button></div>
+    <div class="scroll">
+      <table class="tbl" id="history-table">
+        <thead><tr><th>When</th><th>Who</th><th>Action</th><th>Details</th></tr></thead>
+        <tbody id="history-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal-user" hidden role="dialog" aria-modal="true" aria-labelledby="user-title">
+  <div class="modal-box small">
+    <h2 id="user-title">User</h2>
+    <div class="stack">
+      <label for="u-email">Email (used to sign in) <b class="req">*</b></label>
+      <input id="u-email" type="email" maxlength="150" autocomplete="off">
+      <label for="u-name">Full name (printed under signature) <b class="req">*</b></label>
+      <input id="u-name" maxlength="120" placeholder="e.g. MA. FARAH B. PAREJA">
+      <label for="u-desig">Designation</label>
+      <input id="u-desig" maxlength="120" placeholder="e.g. SWO III">
+      <fieldset class="roles">
+        <legend>Roles <b class="req">*</b></legend>
+        <label class="chk-line"><input type="checkbox" class="u-role" value="Preparer"> <span><b>Preparer</b> &ndash; creates, signs and submits forms</span></label>
+        <label class="chk-line"><input type="checkbox" class="u-role" value="Approver"> <span><b>Approver</b> &ndash; reviews, signs and approves or returns forms</span></label>
+        <label class="chk-line"><input type="checkbox" class="u-role" value="Admin"> <span><b>Admin</b> &ndash; manages users, views all forms and the audit log</span></label>
+      </fieldset>
+      <label class="chk-line"><input type="checkbox" id="u-active" checked> <span>Account is active</span></label>
+      <p class="hint" id="u-note">A temporary password is generated when you save a new user. It is shown once; the user must change it at first sign-in.</p>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-danger" id="user-reset" hidden>Reset password</button>
+      <button type="button" class="btn btn-danger" id="user-delete" hidden>Delete user</button>
+      <span class="spacer"></span>
+      <button type="button" class="btn" data-close>Cancel</button>
+      <button type="button" class="btn btn-primary" id="user-save">Save user</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal-chpw" hidden role="dialog" aria-modal="true" aria-labelledby="chpw-title">
+  <div class="modal-box small">
+    <h2 id="chpw-title">Change password</h2>
+    <p class="alert alert-warn" id="cp-note" hidden>You are using a temporary password. Choose your own password to continue.</p>
+    <div id="cp-error" class="alert alert-error" role="alert" hidden></div>
+    <div class="stack">
+      <label for="cp-old">Current password</label>
+      <input id="cp-old" type="password" autocomplete="current-password" maxlength="200">
+      <label for="cp-new">New password</label>
+      <input id="cp-new" type="password" autocomplete="new-password" maxlength="100">
+      <label for="cp-new2">Confirm new password</label>
+      <input id="cp-new2" type="password" autocomplete="new-password" maxlength="100">
+      <p class="hint">At least 8 characters, with at least one letter and one number.</p>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn" id="cp-cancel" data-close>Cancel</button>
+      <button type="button" class="btn btn-primary" id="cp-save">Save password</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal-temp" hidden role="dialog" aria-modal="true" aria-labelledby="temp-title">
+  <div class="modal-box small">
+    <h2 id="temp-title">Temporary password</h2>
+    <p>Give this to <b id="temp-email"></b>. <b>It is shown only once.</b> They must change it when they first sign in.</p>
+    <div class="temp-box" id="temp-pw" aria-live="polite"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn" id="temp-copy">Copy</button>
+      <button type="button" class="btn btn-primary" data-close>Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Global UI ============ -->
+<div id="busy" class="busy" role="status" aria-live="polite" hidden><div class="spinner" aria-hidden="true"></div><span id="busy-label">Working&hellip;</span></div>
+<div id="toast-host" class="toast-host" role="region" aria-live="polite" aria-label="Notifications"></div>
+<noscript><p class="noscript">This application requires JavaScript.</p></noscript>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ------------------------------ state & helpers ----------------------------- */
+  var S = { token: '', wired: false, user: null, cfg: null, form: null, survey: null, view: '', dirty: false, busy: 0, pads: {}, confirmCb: null, searchTimer: null };
+
+  function $(id) { return document.getElementById(id); }
+  function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function hasRole(r) { return S.user && S.user.roles.indexOf(r) !== -1; }
+  function show(id, on) { $(id).hidden = !on; }
+
+  /* Reusable client-side pagination for list tables. */
+  var tablePages = {};
+  function paginateTable(bodyId, pageSize) {
+    var body = $(bodyId); if (!body) return;
+    var rows = Array.prototype.slice.call(body.children);
+    var key = bodyId, size = pageSize || 10;
+    var pages = Math.max(1, Math.ceil(rows.length / size));
+    var page = Math.min(tablePages[key] || 1, pages); tablePages[key] = page;
+    rows.forEach(function (row, i) { row.style.display = (i >= (page - 1) * size && i < page * size) ? '' : 'none'; });
+    var table = body.closest('table'); if (!table) return;
+    var host = table.parentElement; var controls = host.querySelector(':scope > .table-pagination');
+    if (!controls) { controls = document.createElement('div'); controls.className = 'table-pagination'; controls.setAttribute('aria-label', 'Table pagination'); host.appendChild(controls); }
+    controls.innerHTML = '';
+    var start = rows.length ? (page - 1) * size + 1 : 0, end = Math.min(page * size, rows.length);
+    var info = document.createElement('span'); info.textContent = rows.length ? ('Showing ' + start + '–' + end + ' of ' + rows.length + ' entries') : 'No entries'; controls.appendChild(info);
+    var actions = document.createElement('div'); actions.className = 'page-actions'; controls.appendChild(actions);
+    function addButton(label, target, disabled, active, aria) {
+      var b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.disabled = !!disabled;
+      if (active) b.className = 'active'; if (aria) b.setAttribute('aria-label', aria); if (active) b.setAttribute('aria-current','page');
+      b.addEventListener('click', function () { tablePages[key] = target; paginateTable(bodyId, size); }); actions.appendChild(b);
+    }
+    addButton('‹', Math.max(1,page-1), page===1, false, 'Previous page');
+    for (var n=1; n<=pages; n++) { if (pages>7 && n>2 && n<pages-1 && Math.abs(n-page)>1) { if (n===3 || n===pages-2) { var dots=document.createElement('span'); dots.textContent='…'; dots.style.padding='0 .2rem'; actions.appendChild(dots); } continue; } addButton(String(n),n,false,n===page,'Page '+n); }
+    addButton('›', Math.min(pages,page+1), page===pages, false, 'Next page');
+  }
+
+  /** Safe DOM builder: text is always set via textContent / text nodes (no HTML injection). */
+  function el(tag, attrs, kids) {
+    var n = document.createElement(tag);
+    Object.keys(attrs || {}).forEach(function (k) {
+      var v = attrs[k];
+      if (v === false || v == null) return;
+      if (k === 'text') n.textContent = v;
+      else if (k === 'class') n.className = v;
+      else if (k === 'on') Object.keys(v).forEach(function (ev) { n.addEventListener(ev, v[ev]); });
+      else n.setAttribute(k, v === true ? '' : v);
+    });
+    (kids || []).forEach(function (c) { if (c != null) n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+    return n;
+  }
+
+  function fmtDT(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    return d.toLocaleString('en-PH', { timeZone: 'Asia/Manila', year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  }
+  function peso(v) {
+    var n = Number(v);
+    if (v === '' || v == null || !isFinite(n)) return '';
+    return '\u20B1' + n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function badge(status) { return el('span', { class: 'badge badge-' + String(status).toLowerCase(), text: status }); }
+
+  /** Calls the Apps Script web app (doPost) with fetch. text/plain avoids a CORS preflight. */
   var API_URL = 'https://script.google.com/macros/s/AKfycbxd2Xw_B-M-3jt28kesZwb6Ue8iM2NXsTN6CHPPzBlUFnCGJsEcX6z8el0oeBXaD9VA/exec';   // https://script.google.com/macros/s/XXXX/exec
+  function run(name, args) {
+    // Every call except sign-in carries the session token; the server decides who you are and what you may do.
+    var a = name === 'api_login' ? (args || []) : [S.token].concat(args || []);
+    return fetch(API_URL, {
+      method: 'POST',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ fn: name, args: a })
+    }).then(function (res) {
+      if (!res.ok) throw new Error('Network error (' + res.status + ').');
+      return res.json();
+    }).then(function (j) {
+      if (!j || j.ok !== true) throw new Error(String((j && j.error) || 'Unknown error.').replace(/^Error:\s*/, ''));
+      return j.result;
+    }, function (err) {
+      throw new Error(String((err && err.message) || err).replace(/^Error:\s*/, '') === 'Failed to fetch' ? 'Cannot reach the server. Check your connection.' : String((err && err.message) || err));
+    });
+  }
+  function busy(on, label) {
+    S.busy = Math.max(0, S.busy + (on ? 1 : -1));
+    if (on && label) $('busy-label').textContent = label;
+    $('busy').hidden = S.busy === 0;
+  }
+  function call(name, args, label) {
+    busy(true, label || 'Working\u2026');
+    return run(name, args).then(function (r) { busy(false); return r; }, function (e) { busy(false); throw e; });
+  }
+
+  function toast(msg, type, ms) {
+    var t = el('div', { class: 'toast ' + (type || ''), text: msg });
+    $('toast-host').appendChild(t);
+    setTimeout(function () { t.remove(); }, ms || (type === 'err' ? 8000 : 4000));
+  }
+  /** Server errors: validation messages arrive newline-separated. */
+  function fail(e) {
+    if (String(e.message || e).indexOf('SESSION_EXPIRED') !== -1) { showLogin('Your session has expired. Please sign in again.', true); return; }
+    var lines = String(e.message || e).split('\n').filter(Boolean);
+    if ((S.view === 'form' || S.view === 'survey') && lines.length > 1) showErrors(lines.map(function (m) { return { el: null, msg: m }; }));
+    else toast(lines.join('\n'), 'err');
+  }
+
+  /* ---------------------------------- modals ---------------------------------- */
+  function openModal(id) {
+    $(id).hidden = false;
+    var f = $(id).querySelector('input:not([disabled]),textarea,select');
+    if (f) setTimeout(function () { f.focus(); }, 30);
+  }
+  function closeModal(id) { $(id).hidden = true; }
+  function askConfirm(title, text, okLabel) {
+    return new Promise(function (resolve) {
+      $('confirm-title').textContent = title;
+      $('confirm-text').textContent = text;
+      $('confirm-ok').textContent = okLabel || 'OK';
+      S.confirmCb = resolve;
+      openModal('modal-confirm');
+    });
+  }
+  function resolveConfirm(v) { closeModal('modal-confirm'); if (S.confirmCb) { var cb = S.confirmCb; S.confirmCb = null; cb(v); } }
+
+  /* ------------------------------- signature pad ------------------------------ */
+  function Pad(canvas) {
+    var ctx = canvas.getContext('2d');
+    var drawing = false, prev = null, mid = null, length = 0;
+    canvas.width = 600; canvas.height = 200;
+    function style() { ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#0b1f44'; ctx.fillStyle = '#0b1f44'; }
+    style();
+    function pos(e) {
+      var r = canvas.getBoundingClientRect();
+      return { x: (e.clientX - r.left) * canvas.width / r.width, y: (e.clientY - r.top) * canvas.height / r.height };
+    }
+    function width(e) { return (e.pointerType === 'pen' && e.pressure > 0) ? 1.6 + e.pressure * 3.2 : 2.8; }
+    canvas.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      e.preventDefault();
+      try { canvas.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
+      drawing = true;
+      var p = pos(e); prev = p; mid = p;
+      ctx.beginPath(); ctx.arc(p.x, p.y, width(e) / 2, 0, Math.PI * 2); ctx.fill();
+    });
+    canvas.addEventListener('pointermove', function (e) {
+      if (!drawing) return;
+      e.preventDefault();
+      var p = pos(e), m = { x: (prev.x + p.x) / 2, y: (prev.y + p.y) / 2 };
+      ctx.lineWidth = width(e);
+      ctx.beginPath(); ctx.moveTo(mid.x, mid.y); ctx.quadraticCurveTo(prev.x, prev.y, m.x, m.y); ctx.stroke();
+      length += Math.hypot(p.x - prev.x, p.y - prev.y);
+      prev = p; mid = m;
+    });
+    ['pointerup', 'pointercancel'].forEach(function (ev) { canvas.addEventListener(ev, function () { drawing = false; }); });
+    this.clear = function () { ctx.clearRect(0, 0, canvas.width, canvas.height); length = 0; drawing = false; };
+    this.isEmpty = function () { return length < 40; };   // a dot or tiny scribble is not a signature
+    this.toDataURL = function () { return canvas.toDataURL('image/png'); };
+    /** Draws an existing signature image (saved or uploaded) onto the pad. cleanBg=true turns a white/light photo background transparent. */
+    this.loadImage = function (src, cleanBg) {
+      return new Promise(function (resolve, reject) {
+        var img = new Image();
+        img.onload = function () {
+          if (!img.width || !img.height) { reject(new Error('That image could not be read. Use a PNG or JPG file.')); return; }
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          var m = 10, s = Math.min((canvas.width - 2 * m) / img.width, (canvas.height - 2 * m) / img.height);
+          var w = img.width * s, h = img.height * s;
+          ctx.drawImage(img, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
+          if (cleanBg) {
+            var d = ctx.getImageData(0, 0, canvas.width, canvas.height), px = d.data;
+            for (var i = 0; i < px.length; i += 4) {
+              var lum = (px[i] + px[i + 1] + px[i + 2]) / 3, a = lum >= 240 ? 0 : (lum > 180 ? Math.round(255 * (240 - lum) / 60) : 255);
+              if (a < px[i + 3]) px[i + 3] = a;
+            }
+            ctx.putImageData(d, 0, 0);
+          }
+          length = 1000; drawing = false; resolve();
+        };
+        img.onerror = function () { reject(new Error('That image could not be read. Use a PNG or JPG file.')); };
+        img.src = src;
+      });
+    };
+  }
+
+  /* ------------------------------ navigation / views -------------------------- */
+  var VIEWS = ['list', 'form', 'users', 'audit', 'surveys', 'survey'];
+
+  function showView(name, navKey) {
+    VIEWS.forEach(function (v) { show('view-' + v, v === name); });
+    S.view = name;
+    qsa('.nav-btn').forEach(function (b) {
+      var on = b.getAttribute('data-nav') === (navKey || name);
+      b.classList.toggle('active', on);
+      if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+    });
+    window.scrollTo(0, 0);
+  }
+
+  function go(target, arg) {
+    if ((S.view === 'form' || S.view === 'survey') && S.dirty && !(target === 'form' || target === 'survey')) {
+      askConfirm('Discard changes?', 'You have unsaved changes on this form. Leave without saving?', 'Discard').then(function (ok) {
+        if (ok) { S.dirty = false; go(target, arg); }
+      });
+      return;
+    }
+    if (target === 'list') { showView('list'); loadList(); }
+    else if (target === 'new') { if (!hasRole('Preparer')) return; fillForm(blankForm()); showView('form', 'new'); }
+    else if (target === 'form') {
+      call('api_getForm', [arg], 'Opening form\u2026').then(function (f) { fillForm(f); showView('form', 'list'); }).catch(fail);
+    }
+    else if (target === 'users' && hasRole('Admin')) { showView('users'); loadUsers(); }
+    else if (target === 'audit' && hasRole('Admin')) { showView('audit'); loadAudit(); }
+    else if (target === 'surveys') { showView('surveys'); loadSurveys(); }
+    else if (target === 'newsurvey') { if (!hasRole('Preparer')) return; fillSurvey(blankSurvey()); showView('survey', 'surveys'); }
+    else if (target === 'survey') {
+      call('api_getSurvey', [arg], 'Opening survey\u2026').then(function (s) { fillSurvey(s); showView('survey', 'surveys'); }).catch(fail);
+    }
+  }
+
+  /* ---------------------------------- list view -------------------------------- */
+  function loadList() {
+    call('api_listForms', [{ search: $('list-search').value, status: $('list-status').value }], 'Loading forms\u2026')
+      .then(renderList).catch(fail);
+  }
+  function renderList(rows) {
+    var body = $('list-body'); body.innerHTML = '';
+    show('list-empty', rows.length === 0);
+    rows.forEach(function (r) {
+      var open = function () { go('form', r.formId); };
+      var status = el('td', { 'data-label': 'Status' }, [badge(r.status)]);
+      if (r.awaitingMe) status.appendChild(el('div', { class: 'hint', text: 'Awaiting your approval' }));
+      body.appendChild(el('tr', { class: 'click', tabindex: '0', role: 'link', 'aria-label': 'Open ' + r.formId, on: {
+        click: open, keydown: function (e) { if (e.key === 'Enter') open(); } } }, [
+        el('td', { 'data-label': 'Form ID', class: 'mono', text: r.formId }),
+        el('td', { 'data-label': 'Project', text: r.projectName }),
+        el('td', { 'data-label': 'Budget', text: peso(r.budget) }),
+        el('td', { 'data-label': 'Prepared by', text: r.preparedBy }),
+        status,
+        el('td', { 'data-label': 'Updated', text: fmtDT(r.updatedAt) })
+      ]));
+    });
+    paginateTable('list-body', 10);
+  }
+
+  /* ---------------------------------- form view -------------------------------- */
+  function buildSkeleton() {
+    $('intro-activities').textContent = S.cfg.introActivities;
+    $('intro-results').textContent = S.cfg.introResults;
+    $('form-rev').textContent = S.cfg.formRev;
+
+    var ab = $('activities-body'); ab.innerHTML = '';
+    S.cfg.activities.forEach(function (a) {
+      var labelCell = el('div', { class: 'act-label' }, [el('span', { class: 'cell-label', text: 'Activity/ies conducted' }), a.label]);
+      if (a.key === 'other') labelCell.appendChild(el('input', { class: 'act-detail', maxlength: '500', placeholder: 'Describe the other activity', 'aria-label': 'Other activity description' }));
+      ab.appendChild(el('div', { class: 'act-row', 'data-key': a.key }, [
+        el('label', { class: 'chk' }, [el('input', { type: 'checkbox', class: 'act-check', 'aria-label': 'Conducted: ' + a.label }), el('span', { class: 'cell-label', text: 'Check' })]),
+        labelCell,
+        el('div', null, [el('span', { class: 'cell-label', text: 'Documentation' }), el('input', { class: 'act-doc', maxlength: '2000', 'aria-label': 'Documentation for ' + a.label })])
+      ]));
+    });
+
+    var rb = $('results-body'); rb.innerHTML = '';
+    S.cfg.parameters.forEach(function (p) {
+      var sel = el('select', { class: 'res-considered', 'aria-label': 'Considered? ' + p.title }, [el('option', { value: '', text: 'Select\u2026' })]);
+      S.cfg.considered.forEach(function (c) { sel.appendChild(el('option', { value: c, text: c })); });
+      var param = el('div', { class: 'res-param' }, [el('span', { class: 'cell-label', text: 'Parameter' }), el('strong', { text: p.letter + '. ' + p.title })]);
+      if (p.question) param.appendChild(el('div', { class: 'hint', text: '[' + p.question + ']' }));
+      rb.appendChild(el('div', { class: 'res-row', 'data-key': p.key }, [
+        param,
+        el('div', null, [el('span', { class: 'cell-label', text: 'Considered?' }), sel]),
+        el('div', null, [el('span', { class: 'cell-label', text: 'Recommendations' }), el('textarea', { class: 'res-rec', rows: '3', maxlength: '2000', 'aria-label': 'Recommendation for ' + p.title })])
+      ]));
+    });
+  }
+
+  function blankForm() {
+    return {
+      formId: '', status: 'Draft', version: 0,
+      procuringEntity: S.cfg.defaultProcuringEntity, endUser: '', repName: '', repDesignation: '',
+      projectName: '', budget: '', periodFrom: '', periodTo: '', deliveryDate: '',
+      activities: S.cfg.activities.map(function (a) { return { key: a.key, checked: false, documentation: a.defaultDoc, detail: '' }; }),
+      results: S.cfg.parameters.map(function (p) { return { key: p.key, considered: '', recommendation: '' }; }),
+      prepared: {}, approved: {}, returned: {},
+      perms: { canEdit: true, canApprove: false, canDelete: false, isOwner: true }
+    };
+  }
+
+  function rowFor(sel, key) { return document.querySelector(sel + '[data-key="' + key + '"]'); }
+
+  function fillForm(f) {
+    S.form = f; S.dirty = false;
+    ['procuringEntity', 'endUser', 'repName', 'repDesignation', 'projectName', 'periodFrom', 'periodTo', 'deliveryDate'].forEach(function (k) { $('f-' + k).value = f[k] || ''; });
+    $('f-budget').value = f.budget === '' || f.budget == null ? '' : Number(f.budget).toFixed(2);
+    f.activities.forEach(function (a) {
+      var row = rowFor('.act-row', a.key); if (!row) return;
+      row.querySelector('.act-check').checked = a.checked;
+      row.querySelector('.act-doc').value = a.documentation;
+      var d = row.querySelector('.act-detail'); if (d) d.value = a.detail || '';
+    });
+    f.results.forEach(function (r) {
+      var row = rowFor('.res-row', r.key); if (!row) return;
+      row.querySelector('.res-considered').value = r.considered;
+      row.querySelector('.res-rec').value = r.recommendation;
+    });
+
+    $('form-id-label').textContent = f.formId || 'New form';
+    var st = $('form-status'); st.textContent = f.status; st.className = 'badge badge-' + f.status.toLowerCase();
+    $('form-meta').textContent = f.formId ? ('Created ' + fmtDT(f.createdAt) + ' by ' + f.createdBy + ' \u00B7 Last updated ' + fmtDT(f.updatedAt) + ' \u00B7 v' + f.version) : '';
+
+    var ra = $('returned-alert');
+    if (f.status === 'Returned' && f.returned && f.returned.remarks) {
+      ra.hidden = false; ra.innerHTML = '';
+      ra.appendChild(el('strong', { text: 'Returned for revision' }));
+      ra.appendChild(el('div', { text: f.returned.remarks }));
+      ra.appendChild(el('div', { class: 'hint', text: 'By ' + f.returned.by + ' on ' + fmtDT(f.returned.at) + '. Please correct, re-sign and resubmit.' }));
+    } else { ra.hidden = true; }
+
+    clearErrors();
+    applyMode(f);
+    renderSignatures(f);
+  }
+
+  function applyMode(f) {
+    var editable = !!f.perms.canEdit;
+    qsa('#ms-form input, #ms-form select, #ms-form textarea').forEach(function (n) {
+      if (n.id === 'chk-prep' || n.id === 'chk-appr' || n.type === 'file') return;
+      n.disabled = !editable;
+    });
+    var saved = !!f.formId;
+    show('btn-save', editable);
+    show('btn-submit', editable);
+    show('btn-delete', !!f.perms.canDelete && saved);
+    show('btn-approve', !!f.perms.canApprove);
+    show('btn-return', !!f.perms.canApprove);
+    show('btn-print', saved);
+    show('btn-pdf', saved);
+    show('btn-history', saved);
+    $('btn-submit').textContent = f.status === 'Returned' ? 'Re-sign & resubmit' : 'Sign & submit for approval';
+  }
+
+  function renderSignatures(f) {
+    var editable = !!f.perms.canEdit, canAppr = !!f.perms.canApprove;
+    S.pads.prep.clear(); S.pads.appr.clear();
+    $('chk-prep').checked = false; $('chk-appr').checked = false;
+
+    // Prepared by
+    show('prep-sign', editable);
+    show('prep-view', !editable && !!f.prepared.signature);
+    show('prep-pending', !editable && !f.prepared.signature);
+    if (f.prepared.signature) $('prep-img').src = f.prepared.signature;
+    if (editable) {
+      $('prep-who').textContent = S.user.name;
+      $('prep-name').textContent = S.user.name; $('prep-desig').textContent = S.user.designation || '';
+      $('prep-note').textContent = 'Your name and designation come from your user profile.';
+    } else {
+      $('prep-name').textContent = f.prepared.name || ''; $('prep-desig').textContent = f.prepared.designation || '';
+      $('prep-note').textContent = '';
+    }
+
+    // Approved by (completely separate pad and record)
+    show('appr-sign', canAppr);
+    show('appr-view', !canAppr && !!f.approved.signature);
+    show('appr-pending', !canAppr && !f.approved.signature);
+    if (f.approved.signature) $('appr-img').src = f.approved.signature;
+    if (canAppr) {
+      $('appr-who').textContent = S.user.name;
+      $('appr-name').textContent = S.user.name; $('appr-desig').textContent = S.user.designation || '';
+      $('appr-note').textContent = 'Signing as an authorized Approver.';
+    } else {
+      $('appr-name').textContent = f.approved.name || ''; $('appr-desig').textContent = f.approved.designation || '';
+      $('appr-note').textContent = '';
+    }
+  }
+
+  function collect() {
+    var f = S.form || {};
+    var p = {
+      formId: f.formId || '', version: f.version || 0,
+      procuringEntity: $('f-procuringEntity').value, endUser: $('f-endUser').value,
+      repName: $('f-repName').value, repDesignation: $('f-repDesignation').value,
+      projectName: $('f-projectName').value, budget: $('f-budget').value,
+      periodFrom: $('f-periodFrom').value.trim(), periodTo: $('f-periodTo').value.trim(),
+      deliveryDate: $('f-deliveryDate').value, activities: [], results: []
+    };
+    qsa('.act-row').forEach(function (row) {
+      var d = row.querySelector('.act-detail');
+      p.activities.push({ key: row.getAttribute('data-key'), checked: row.querySelector('.act-check').checked, documentation: row.querySelector('.act-doc').value, detail: d ? d.value : '' });
+    });
+    qsa('.res-row').forEach(function (row) {
+      p.results.push({ key: row.getAttribute('data-key'), considered: row.querySelector('.res-considered').value, recommendation: row.querySelector('.res-rec').value });
+    });
+    return p;
+  }
+
+  /* ----------------------------- client-side validation ------------------------ */
+  var MMYYYY = /^(0[1-9]|1[0-2])\/(\d{4})$/;
+  function monthIdx(s) { var m = MMYYYY.exec(s); return m ? (+m[2]) * 12 + (+m[1]) : null; }
+
+  function validate(p, strict) {
+    var errs = [];
+    function add(target, msg) { errs.push({ el: typeof target === 'string' ? $(target) : target, msg: msg }); }
+    var b = parseFloat(p.budget);
+    if (!p.procuringEntity.trim()) add('f-procuringEntity', 'Name of Procuring Entity is required.');
+    if (!p.projectName.trim()) add('f-projectName', 'Project Name is required.');
+    if (p.budget !== '' && (isNaN(b) || b < 0)) add('f-budget', 'Estimated Budget must be a positive number.');
+    if (p.periodFrom && monthIdx(p.periodFrom) === null) add('f-periodFrom', 'Period "From" must be in mm/yyyy format.');
+    if (p.periodTo && monthIdx(p.periodTo) === null) add('f-periodTo', 'Period "To" must be in mm/yyyy format.');
+    if (monthIdx(p.periodFrom) !== null && monthIdx(p.periodTo) !== null && monthIdx(p.periodTo) < monthIdx(p.periodFrom)) add('f-periodTo', 'Period "To" cannot be earlier than "From".');
+    if (!strict) return errs;
+
+    if (!p.endUser.trim()) add('f-endUser', 'End-User/Implementing Unit is required.');
+    if (!p.repName.trim()) add('f-repName', 'Name of Representative is required.');
+    if (!p.repDesignation.trim()) add('f-repDesignation', 'Designation of Representative is required.');
+    if (p.budget === '' || isNaN(b) || b <= 0) add('f-budget', 'Estimated Budget must be greater than zero.');
+    if (monthIdx(p.periodFrom) === null) add('f-periodFrom', 'Period of Market Scoping (From, mm/yyyy) is required.');
+    if (monthIdx(p.periodTo) === null) add('f-periodTo', 'Period of Market Scoping (To, mm/yyyy) is required.');
+    if (!p.deliveryDate.trim()) add('f-deliveryDate', 'Expected Date of Delivery is required.');
+    if (!p.activities.some(function (a) { return a.checked; })) add(qsa('.act-check')[0], 'Check at least one Market Scoping Activity conducted.');
+    p.activities.forEach(function (a) {
+      if (a.key === 'other' && a.checked && !a.detail.trim()) add(rowFor('.act-row', 'other').querySelector('.act-detail'), 'Describe the "Other analogous market scoping activity".');
+    });
+    p.results.forEach(function (r) {
+      var def = S.cfg.parameters.filter(function (x) { return x.key === r.key; })[0];
+      var row = rowFor('.res-row', r.key);
+      if (!r.considered) add(row.querySelector('.res-considered'), def.letter + '. ' + def.title + ': select Yes / No / Not Applicable.');
+      if (!r.recommendation.trim()) add(row.querySelector('.res-rec'), def.letter + '. ' + def.title + ': enter a recommendation (use N/A if not applicable).');
+    });
+    return errs;
+  }
+
+  function clearErrors() {
+    qsa('.invalid').forEach(function (n) { n.classList.remove('invalid'); });
+    ['form-errors', 'survey-errors'].forEach(function (id) { $(id).hidden = true; $(id).innerHTML = ''; });
+  }
+  function showErrors(errs) {
+    clearErrors();
+    var box = $(S.view === 'survey' ? 'survey-errors' : 'form-errors');
+    box.appendChild(el('strong', { text: 'Please fix the following:' }));
+    var ul = el('ul'); box.appendChild(ul);
+    var first = null;
+    errs.forEach(function (e) {
+      ul.appendChild(el('li', { text: e.msg }));
+      if (e.el) { e.el.classList.add('invalid'); if (!first) first = e.el; }
+    });
+    box.hidden = false;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (first) setTimeout(function () { try { first.focus({ preventScroll: true }); } catch (x) { /* ignore */ } }, 250);
+  }
+
+  /* --------------------------------- form actions ------------------------------ */
+  function saveDraft() {
+    var p = collect(), errs = validate(p, false);
+    if (errs.length) return showErrors(errs);
+    call('api_saveForm', [p], 'Saving draft\u2026').then(function (f) {
+      fillForm(f); toast('Draft saved.', 'ok'); showView('form', 'list');
+    }).catch(fail);
+  }
+
+  /* ------------------------- saved / uploaded signatures ---------------------- */
+  function sigPad(which) { return which === 'prep' ? S.pads.prep : (which === 'sv' ? S.pads.survey : S.pads.appr); }
+  function useSavedSignature(which) {
+    call('api_getSavedSignature', [], 'Loading saved signature\u2026').then(function (r) {
+      if (!r || !r.signature) { toast('You have no saved signature yet. Sign or upload one, then press "Save to my profile".', 'err'); return; }
+      return sigPad(which).loadImage(r.signature, false).then(function () { S.dirty = true; toast('Saved signature loaded. Tick the certification, then continue.', 'ok'); });
+    }).catch(fail);
+  }
+  function keepSignature(which) {
+    var pad = sigPad(which);
+    if (pad.isEmpty()) { toast('Draw or upload a signature first.', 'err'); return; }
+    call('api_saveMySignature', [pad.toDataURL()], 'Saving signature\u2026').then(function () { toast('Signature saved to your profile.', 'ok'); }).catch(fail);
+  }
+  function uploadSignature(which, file) {
+    if (!file) return;
+    if (!/^image\/(png|jpeg|webp)$/.test(file.type)) { toast('Please choose a PNG or JPG image.', 'err'); return; }
+    if (file.size > 5 * 1024 * 1024) { toast('Image is too large (max 5 MB).', 'err'); return; }
+    var fr = new FileReader();
+    fr.onerror = function () { toast('Could not read that file.', 'err'); };
+    fr.onload = function () {
+      sigPad(which).loadImage(String(fr.result), true).then(function () { S.dirty = true; toast('Signature image loaded. Tick the certification, then continue.', 'ok'); }).catch(fail);
+    };
+    fr.readAsDataURL(file);
+  }
+
+  function submitForm() {
+    var p = collect(), errs = validate(p, true);
+    if (S.pads.prep.isEmpty()) errs.push({ el: $('pad-prepared'), msg: 'Please sign in the "Prepared by" box.' });
+    if (!$('chk-prep').checked) errs.push({ el: $('chk-prep'), msg: 'Tick the certification statement under "Prepared by".' });
+    if (errs.length) return showErrors(errs);
+    askConfirm('Sign and submit', 'Your signature will be attached and the form will be locked and sent to an Approver. It cannot be edited unless it is returned. Continue?', 'Sign & submit').then(function (ok) {
+      if (!ok) return;
+      call('api_submitForm', [p, S.pads.prep.toDataURL(), true], 'Signing and submitting\u2026').then(function (f) {
+        fillForm(f); showView('form', 'list'); toast('Form signed and submitted for approval.', 'ok');
+      }).catch(fail);
+    });
+  }
+
+  function approveForm() {
+    var errs = [];
+    if (S.pads.appr.isEmpty()) errs.push({ el: $('pad-approved'), msg: 'Please sign in the "Approved by" box.' });
+    if (!$('chk-appr').checked) errs.push({ el: $('chk-appr'), msg: 'Tick the certification statement under "Approved by".' });
+    if (errs.length) return showErrors(errs);
+    askConfirm('Approve and sign', 'This records your electronic signature and approves the form. The form will be locked. Continue?', 'Approve & sign').then(function (ok) {
+      if (!ok) return;
+      call('api_approveForm', [S.form.formId, S.form.version, S.pads.appr.toDataURL(), true], 'Signing and approving\u2026').then(function (f) {
+        fillForm(f); toast('Form approved.', 'ok');
+      }).catch(fail);
+    });
+  }
+
+  function returnForm() {
+    var remarks = $('return-remarks').value.trim();
+    if (remarks.length < 5) { toast('Please enter remarks (at least 5 characters).', 'err'); return; }
+    call('api_returnForm', [S.form.formId, S.form.version, remarks], 'Returning form\u2026').then(function (f) {
+      closeModal('modal-return'); fillForm(f); toast('Form returned to the preparer.', 'ok');
+    }).catch(fail);
+  }
+
+  function deleteForm() {
+    askConfirm('Delete draft', 'Permanently delete ' + S.form.formId + '? This is recorded in the audit log and cannot be undone.', 'Delete').then(function (ok) {
+      if (!ok) return;
+      call('api_deleteForm', [S.form.formId], 'Deleting\u2026').then(function () { S.dirty = false; toast('Draft deleted.', 'ok'); go('list'); }).catch(fail);
+    });
+  }
+
+  function guardSaved() {
+    if (S.dirty && S.form.perms.canEdit) { toast('Save your changes first. Printouts use the saved version.', 'err'); return false; }
+    return true;
+  }
+  function previewPrint() {
+    if (!guardSaved()) return;
+    call('api_getPrintHtml', [S.form.formId], 'Preparing printable form\u2026').then(function (html) {
+      $('print-frame').srcdoc = html; openModal('modal-print');
+    }).catch(fail);
+  }
+  function printNow() {
+    var w = $('print-frame').contentWindow;
+    w.focus(); w.print();
+  }
+  function downloadPdf() {
+    if (!guardSaved()) return;
+    call('api_getPdf', [S.form.formId], 'Generating PDF\u2026').then(function (r) {
+      var bin = atob(r.base64), bytes = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      var url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+      var a = el('a', { href: url, download: r.filename });
+      document.body.appendChild(a); a.click();
+      setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 5000);
+      toast('PDF ready: ' + r.filename + '. If no download starts, use Print preview, then Print, then Save as PDF.', 'ok', 9000);
+    }).catch(fail);
+  }
+
+  function showHistory() {
+    call('api_getAudit', [{ formId: S.form.formId, limit: 200 }], 'Loading history\u2026').then(function (rows) {
+      $('history-title').textContent = 'History \u2013 ' + S.form.formId;
+      renderAudit($('history-body'), rows, false);
+      openModal('modal-history');
+    }).catch(fail);
+  }
+
+  /* ------------------------------- market survey ------------------------------ */
+  function blankSurvey() {
+    return {
+      surveyId: '', status: 'Draft', version: 0,
+      agency: S.cfg.survey.agency, office: S.cfg.survey.office, asOf: '', surveyDate: '',
+      suppliers: ['', '', ''], items: [{ spec: '', prices: ['', '', ''] }],
+      signed: {}, perms: { canEdit: true, canDelete: false, isOwner: true }
+    };
+  }
+
+  function loadSurveys() {
+    call('api_listSurveys', [{ search: $('sv-search').value, status: $('sv-status').value }], 'Loading surveys\u2026')
+      .then(renderSurveys).catch(fail);
+  }
+  function renderSurveys(rows) {
+    var body = $('sv-list-body'); body.innerHTML = '';
+    show('sv-empty', rows.length === 0);
+    rows.forEach(function (r) {
+      var open = function () { go('survey', r.surveyId); };
+      body.appendChild(el('tr', { class: 'click', tabindex: '0', role: 'link', 'aria-label': 'Open ' + r.surveyId, on: {
+        click: open, keydown: function (e) { if (e.key === 'Enter') open(); } } }, [
+        el('td', { 'data-label': 'Survey ID', class: 'mono', text: r.surveyId }),
+        el('td', { 'data-label': 'Specification', text: r.summary }),
+        el('td', { 'data-label': 'As of', text: r.asOf }),
+        el('td', { 'data-label': 'Surveyed by', text: r.preparedBy }),
+        el('td', { 'data-label': 'Status' }, [badge(r.status)]),
+        el('td', { 'data-label': 'Updated', text: fmtDT(r.updatedAt) })
+      ]));
+    });
+    paginateTable('sv-list-body', 10);
+  }
+
+  /** One item row: number, specifications, 3 supplier prices, remove button. */
+  function svRow(it) {
+    var spec = el('textarea', { class: 'sv-spec', maxlength: '1000', rows: '2', placeholder: 'e.g. Rental of Van for the monitoring visit, September 28-30', 'aria-label': 'Specifications' });
+    spec.value = it.spec || '';
+    var prices = [0, 1, 2].map(function (i) {
+      var inp = el('input', { class: 'sv-price', type: 'number', inputmode: 'decimal', min: '0', step: '0.01', placeholder: '0.00', 'aria-label': 'Supplier ' + (i + 1) + ' price' });
+      var v = it.prices && it.prices[i];
+      inp.value = (v === '' || v == null || !isFinite(Number(v))) ? '' : Number(v).toFixed(2);
+      return el('div', null, [el('span', { class: 'cell-label', text: 'Supplier ' + (i + 1) + ' price (\u20B1)' }), inp]);
+    });
+    var row = el('div', { class: 'sv-grid sv-row' }, [
+      el('div', { class: 'sv-no' }),
+      el('div', { class: 'sv-specwrap' }, [el('span', { class: 'cell-label', text: 'Specifications' }), spec]),
+      prices[0], prices[1], prices[2],
+      el('button', { type: 'button', class: 'btn btn-danger sv-del', title: 'Remove item', 'aria-label': 'Remove item', text: '\u2715', on: { click: function () { removeSvRow(row); } } })
+    ]);
+    return row;
+  }
+  function renumberSv() { qsa('.sv-row').forEach(function (r, i) { r.querySelector('.sv-no').textContent = String(i + 1); }); }
+  function addSvRow(it) {
+    if (qsa('.sv-row').length >= S.cfg.survey.maxItems) { toast('You can add up to ' + S.cfg.survey.maxItems + ' items.', 'err'); return; }
+    $('sv-items').appendChild(svRow(it || { spec: '', prices: ['', '', ''] }));
+    renumberSv(); S.dirty = true;
+  }
+  function removeSvRow(row) {
+    if (qsa('.sv-row').length <= 1) {            // keep one row: just clear it
+      row.querySelector('.sv-spec').value = ''; qsa('.sv-price', row).forEach(function (x) { x.value = ''; });
+    } else { row.remove(); renumberSv(); }
+    S.dirty = true;
+  }
+
+  function fillSurvey(s) {
+    S.survey = s; S.dirty = false;
+    $('sv-agency').value = s.agency || ''; $('sv-office').value = s.office || '';
+    $('sv-asOf').value = s.asOf || ''; $('sv-surveyDate').value = s.surveyDate || '';
+    [0, 1, 2].forEach(function (i) { $('sv-sup' + i).value = (s.suppliers && s.suppliers[i]) || ''; });
+    var box = $('sv-items'); box.innerHTML = '';
+    (s.items && s.items.length ? s.items : [{ spec: '', prices: ['', '', ''] }]).forEach(function (it) { box.appendChild(svRow(it)); });
+    renumberSv();
+    $('sv-certA').textContent = S.cfg.survey.certA; $('sv-certB').textContent = S.cfg.survey.certB;
+    $('sv-id-label').textContent = s.surveyId || 'New survey';
+    var st = $('sv-status-badge'); st.textContent = s.status; st.className = 'badge badge-' + s.status.toLowerCase();
+    $('sv-meta').textContent = s.surveyId ? ('Created ' + fmtDT(s.createdAt) + ' by ' + s.createdBy + ' \u00B7 Last updated ' + fmtDT(s.updatedAt) + ' \u00B7 v' + s.version) : '';
+    clearErrors();
+    applySurveyMode(s);
+    renderSurveySignature(s);
+  }
+
+  function applySurveyMode(s) {
+    var editable = !!s.perms.canEdit;
+    qsa('#sv-form input, #sv-form textarea, #sv-form button.sv-del').forEach(function (n) {
+      if (n.id === 'chk-sv' || n.type === 'file') return;
+      n.disabled = !editable;
+    });
+    show('btn-sv-add', editable);
+    qsa('.sv-del').forEach(function (b) { b.hidden = !editable; });
+    var saved = !!s.surveyId;
+    show('btn-sv-save', editable); show('btn-sv-sign', editable);
+    show('btn-sv-delete', !!s.perms.canDelete && saved);
+    show('btn-sv-print', saved); show('btn-sv-pdf', saved); show('btn-sv-history', saved);
+  }
+
+  function renderSurveySignature(s) {
+    var editable = !!s.perms.canEdit, sg = s.signed || {};
+    S.pads.survey.clear(); $('chk-sv').checked = false;
+    show('sv-sign', editable);
+    show('sv-sigview', !editable && !!sg.signature);
+    show('sv-sigpending', !editable && !sg.signature);
+    if (sg.signature) $('sv-sig-img').src = sg.signature;
+    if (editable) {
+      $('sv-who').textContent = S.user.name;
+      $('sv-name').textContent = S.user.name; $('sv-desig').textContent = S.user.designation ? ('Designation: ' + S.user.designation) : '';
+      $('sv-note').textContent = 'Your name and designation come from your user profile.';
+    } else {
+      $('sv-name').textContent = sg.name || ''; $('sv-desig').textContent = sg.designation ? ('Designation: ' + sg.designation) : '';
+      $('sv-note').textContent = ''; // Keep signing timestamp and email hidden in the Market Survey UI.
+    }
+  }
+
+  function collectSurvey() {
+    var s = S.survey || {};
+    return {
+      surveyId: s.surveyId || '', version: s.version || 0,
+      agency: $('sv-agency').value, office: $('sv-office').value, asOf: $('sv-asOf').value, surveyDate: $('sv-surveyDate').value,
+      suppliers: [0, 1, 2].map(function (i) { return $('sv-sup' + i).value; }),
+      items: qsa('.sv-row').map(function (row) {
+        return { spec: row.querySelector('.sv-spec').value, prices: qsa('.sv-price', row).map(function (x) { return x.value; }) };
+      })
+    };
+  }
+
+  function validateSurvey(p, strict) {
+    var errs = [];
+    function add(target, msg) { errs.push({ el: typeof target === 'string' ? $(target) : target, msg: msg }); }
+    if (!p.agency.trim()) add('sv-agency', 'Agency name is required.');
+    var used = 0;
+    qsa('.sv-row').forEach(function (row, i) {
+      var spec = row.querySelector('.sv-spec'), prs = qsa('.sv-price', row);
+      var any = prs.some(function (x) { return x.value !== ''; });
+      prs.forEach(function (x, j) { if (x.value !== '' && Number(x.value) < 0) add(x, 'Item ' + (i + 1) + ', supplier ' + (j + 1) + ': price cannot be negative.'); });
+      if (!spec.value.trim() && !any) return;      // blank rows are ignored
+      used++;
+      if (strict) {
+        if (!spec.value.trim()) add(spec, 'Item ' + (i + 1) + ': Specifications are required.');
+        if (!any) add(prs[0], 'Item ' + (i + 1) + ': enter at least one supplier price.');
+      }
+    });
+    if (!strict) return errs;
+    if (!p.office.trim()) add('sv-office', 'Office is required.');
+    if (!p.asOf.trim()) add('sv-asOf', '"As of" date is required.');
+    if (!p.surveyDate.trim()) add('sv-surveyDate', 'Enter the date the Market Survey was conducted.');
+    p.suppliers.forEach(function (n, i) { if (!n.trim()) add('sv-sup' + i, 'Supplier ' + (i + 1) + ' name is required.'); });
+    if (!used) add(qsa('.sv-spec')[0], 'Enter at least one item.');
+    return errs;
+  }
+
+  function saveSurvey() {
+    var p = collectSurvey(), errs = validateSurvey(p, false);
+    if (errs.length) return showErrors(errs);
+    call('api_saveSurvey', [p], 'Saving draft\u2026').then(function (s) {
+      fillSurvey(s); toast('Draft saved.', 'ok'); showView('survey', 'surveys');
+    }).catch(fail);
+  }
+  function signSurvey() {
+    var p = collectSurvey(), errs = validateSurvey(p, true);
+    if (S.pads.survey.isEmpty()) errs.push({ el: $('pad-survey'), msg: 'Please sign in the signature box.' });
+    if (!$('chk-sv').checked) errs.push({ el: $('chk-sv'), msg: 'Tick the certification statement under the signature.' });
+    if (errs.length) return showErrors(errs);
+    askConfirm('Sign and certify', 'Your signature will be attached and the Market Survey will be locked. It cannot be edited afterwards. Continue?', 'Sign & certify').then(function (ok) {
+      if (!ok) return;
+      call('api_signSurvey', [p, S.pads.survey.toDataURL(), true], 'Signing\u2026').then(function (s) {
+        fillSurvey(s); showView('survey', 'surveys'); toast('Market Survey signed and locked.', 'ok');
+      }).catch(fail);
+    });
+  }
+  function deleteSurvey() {
+    askConfirm('Delete draft', 'Permanently delete ' + S.survey.surveyId + '? This is recorded in the audit log and cannot be undone.', 'Delete').then(function (ok) {
+      if (!ok) return;
+      call('api_deleteSurvey', [S.survey.surveyId], 'Deleting\u2026').then(function () { S.dirty = false; toast('Draft deleted.', 'ok'); go('surveys'); }).catch(fail);
+    });
+  }
+  function guardSurveySaved() {
+    if (S.dirty && S.survey.perms.canEdit) { toast('Save your changes first. Printouts use the saved version.', 'err'); return false; }
+    return true;
+  }
+  function previewSurveyPrint() {
+    if (!guardSurveySaved()) return;
+    call('api_getSurveyPrintHtml', [S.survey.surveyId], 'Preparing printable form\u2026').then(function (html) {
+      $('print-frame').srcdoc = html; openModal('modal-print');
+    }).catch(fail);
+  }
+  function downloadSurveyPdf() {
+    if (!guardSurveySaved()) return;
+    call('api_getSurveyPdf', [S.survey.surveyId], 'Generating PDF\u2026').then(function (r) {
+      var bin = atob(r.base64), bytes = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      var url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+      var a = el('a', { href: url, download: r.filename });
+      document.body.appendChild(a); a.click();
+      setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 5000);
+      toast('PDF ready: ' + r.filename + '. If no download starts, use Print preview, then Print, then Save as PDF.', 'ok', 9000);
+    }).catch(fail);
+  }
+  function showSurveyHistory() {
+    call('api_getAudit', [{ formId: S.survey.surveyId, limit: 200 }], 'Loading history\u2026').then(function (rows) {
+      $('history-title').textContent = 'History \u2013 ' + S.survey.surveyId;
+      renderAudit($('history-body'), rows, false);
+      openModal('modal-history');
+    }).catch(fail);
+  }
+
+  /* ------------------------------------ audit ---------------------------------- */
+  function renderAudit(body, rows, withForm) {
+    body.innerHTML = '';
+    rows.forEach(function (r) {
+      var tds = [
+        el('td', { 'data-label': 'When', text: fmtDT(r.timestamp) }),
+        el('td', { 'data-label': 'Who', text: r.actor + (r.roles ? ' (' + r.roles + ')' : '') }),
+        el('td', { 'data-label': 'Action', class: 'mono', text: r.action })
+      ];
+      if (withForm) tds.push(el('td', { 'data-label': 'Form', text: r.formId }));
+      tds.push(el('td', { 'data-label': 'Details', class: 'det', text: r.details }));
+      body.appendChild(el('tr', null, tds));
+    });
+    if (!rows.length) body.appendChild(el('tr', null, [el('td', { colspan: withForm ? '5' : '4', class: 'empty', text: 'No entries.' })]));
+    paginateTable(body.id, 10);
+  }
+  function loadAudit() {
+    call('api_getAudit', [{ formId: $('audit-form').value.trim(), limit: $('audit-limit').value }], 'Loading audit log\u2026')
+      .then(function (rows) { renderAudit($('audit-body'), rows, true); }).catch(fail);
+  }
+  function verifyAudit() {
+    call('api_verifyAudit', [], 'Verifying\u2026').then(function (r) {
+      var o = $('audit-verify-result');
+      o.textContent = r.ok ? ('\u2714 Chain intact (' + r.checked + ' entries)') : ('\u26A0 Tampering detected at sheet row ' + r.brokenAtRow);
+      o.style.color = r.ok ? 'var(--ok)' : 'var(--err)';
+    }).catch(fail);
+  }
+
+  /* ------------------------------------ users ---------------------------------- */
+  var editingEmail = '';
+  function loadUsers() {
+    call('api_listUsers', [], 'Loading users\u2026').then(function (rows) {
+      var body = $('users-body'); body.innerHTML = '';
+      rows.forEach(function (u) {
+        body.appendChild(el('tr', null, [
+          el('td', { 'data-label': 'Name', text: u.name }),
+          el('td', { 'data-label': 'Email', text: u.email }),
+          el('td', { 'data-label': 'Designation', text: u.designation }),
+          el('td', { 'data-label': 'Roles', text: u.roles.join(', ') }),
+          el('td', { 'data-label': 'Status' }, [el('span', { class: 'badge ' + (u.active ? 'badge-active' : 'badge-inactive'), text: u.active ? 'Active' : 'Inactive' })]),
+          el('td', null, [el('button', { type: 'button', class: 'btn btn-sm', text: 'Edit', on: { click: function () { openUser(u); } } })]
+            .concat(u.email === S.user.email ? [] : [el('button', { type: 'button', class: 'btn btn-sm btn-danger', text: 'Delete', on: { click: function () { editingEmail = u.email; deleteUserAccount(); } } })]))
+        ]));
+      });
+      paginateTable('users-body', 10);
+    }).catch(fail);
+  }
+  function openUser(u) {
+    editingEmail = u ? u.email : '';
+    $('user-title').textContent = u ? 'Edit user' : 'Add user';
+    $('u-email').value = u ? u.email : ''; $('u-email').disabled = !!u;
+    $('u-name').value = u ? u.name : ''; $('u-desig').value = u ? u.designation : '';
+    $('u-active').checked = u ? u.active : true;
+    show('user-reset', !!u); show('user-delete', !!u && u.email !== S.user.email); show('u-note', !u);
+    qsa('.u-role').forEach(function (c) { c.checked = !!u && u.roles.indexOf(c.value) !== -1; });
+    openModal('modal-user');
+  }
+  function deleteUserAccount() {
+    askConfirm('Delete user', 'Permanently delete ' + editingEmail + '? They can no longer sign in and their saved signature is removed. Signatures already placed on forms stay on those forms. This cannot be undone. (To keep the account but block sign-in, untick "Account is active" instead.)', 'Delete user').then(function (ok) {
+      if (!ok) return;
+      call('api_deleteUser', [editingEmail], 'Deleting user\u2026').then(function () {
+        closeModal('modal-user'); loadUsers(); toast('User deleted.', 'ok');
+      }).catch(fail);
+    });
+  }
+  function saveUser() {
+    var roles = qsa('.u-role').filter(function (c) { return c.checked; }).map(function (c) { return c.value; });
+    var p = { email: editingEmail || $('u-email').value, name: $('u-name').value, designation: $('u-desig').value, roles: roles, active: $('u-active').checked };
+    call('api_saveUser', [p], 'Saving user\u2026').then(function (r) {
+      closeModal('modal-user'); loadUsers();
+      if (r.tempPassword) showTemp(r.email, r.tempPassword, 'User created'); else toast('User saved.', 'ok');
+    }).catch(fail);
+  }
+
+  /* --------------------------- session / sign-in / password ------------------- */
+  var TOKEN_KEY = 'ms_session';
+  var chpwForced = false;
+
+  function loadToken() { try { return sessionStorage.getItem(TOKEN_KEY) || ''; } catch (e) { return ''; } }
+  function saveToken(t) {
+    S.token = t || '';
+    try { if (t) sessionStorage.setItem(TOKEN_KEY, t); else sessionStorage.removeItem(TOKEN_KEY); } catch (e) { /* kept in memory only */ }
+  }
+  function showScreen(name) { ['loading', 'login', 'denied', 'app'].forEach(function (n) { show('screen-' + n, n === name); }); }
+
+  function showLoginError(msg, info) {
+    var box = $('login-error');
+    box.className = 'alert ' + (info ? 'alert-warn' : 'alert-error');
+    box.textContent = msg || ''; box.hidden = !msg;
+  }
+  function showLogin(note, info) {
+    saveToken(''); S.user = null; S.form = null; S.dirty = false; S.view = '';
+    $('login-password').value = '';
+    showLoginError(note, info);
+    showScreen('login');
+    setTimeout(function () { $(($('login-email').value ? 'login-password' : 'login-email')).focus(); }, 50);
+  }
+  function showDenied(msg) {
+    $('denied-msg').textContent = msg; $('denied-email').textContent = '';
+    showScreen('denied');
+  }
+
+  function doLogin(e) {
+    e.preventDefault();
+    var email = $('login-email').value.trim(), pw = $('login-password').value;
+    if (!email || !pw) { showLoginError('Enter your email and password.'); return; }
+    showLoginError('');
+    $('btn-login').disabled = true;
+    call('api_login', [email, pw], 'Signing in\u2026').then(function (r) {
+      saveToken(r.token); $('login-password').value = '';
+      return boot();
+    }).catch(function (err) { showLoginError(err.message); })
+      .then(function () { $('btn-login').disabled = false; });
+  }
+
+  /** Ask the server who the session belongs to; roles come from the server, never from the browser. */
+  function boot() {
+    return run('api_bootstrap', []).then(function (b) {
+      if (!b.authorized) { showLogin(''); return; }
+      enterApp(b);
+    });
+  }
+
+  function enterApp(b) {
+    S.user = b.user; S.cfg = b.config;
+    document.title = S.cfg.appTitle;
+    $('user-name').textContent = S.user.name + (S.user.designation ? ', ' + S.user.designation : '');
+    $('user-roles').textContent = S.user.email + ' \u00B7 ' + S.user.roles.join(' / ');
+    show('nav-new', hasRole('Preparer')); show('btn-new', hasRole('Preparer')); show('btn-new-survey', hasRole('Preparer'));
+    show('nav-users', hasRole('Admin')); show('nav-audit', hasRole('Admin'));
+    if (!S.wired) {
+      S.pads.prep = new Pad($('pad-prepared'));
+      S.pads.appr = new Pad($('pad-approved'));
+      S.pads.survey = new Pad($('pad-survey'));
+      buildSkeleton(); wire(); S.wired = true;
+    }
+    ['list-body', 'sv-list-body', 'users-body', 'audit-body'].forEach(function (id) { $(id).innerHTML = ''; });
+    $('list-search').value = ''; $('list-status').value = ''; $('sv-search').value = ''; $('sv-status').value = '';
+    showScreen('app');
+    if (b.mustChange) { openChpw(true); return; }
+    go('list');
+  }
+
+  function logout() {
+    var doIt = function () {
+      run('api_logout', []).catch(function () { /* ignore */ }).then(function () { showLogin('You have been signed out.', true); });
+    };
+    if (S.dirty) askConfirm('Sign out?', 'You have unsaved changes on this form. Sign out anyway?', 'Sign out').then(function (ok) { if (ok) doIt(); });
+    else doIt();
+  }
+
+  function openChpw(forced) {
+    chpwForced = !!forced;
+    ['cp-old', 'cp-new', 'cp-new2'].forEach(function (id) { $(id).value = ''; });
+    show('cp-note', chpwForced); show('cp-cancel', !chpwForced); cpError('');
+    openModal('modal-chpw');
+  }
+  function cpError(msg) { var b = $('cp-error'); b.textContent = msg || ''; b.hidden = !msg; }
+  function saveChpw() {
+    var o = $('cp-old').value, n = $('cp-new').value, n2 = $('cp-new2').value;
+    if (!o) return cpError('Enter your current password.');
+    if (n.length < 8) return cpError('The new password must be at least 8 characters long.');
+    if (!/[A-Za-z]/.test(n) || !/\d/.test(n)) return cpError('The new password needs at least one letter and one number.');
+    if (n !== n2) return cpError('The new passwords do not match.');
+    if (n === o) return cpError('The new password must be different from the current one.');
+    cpError('');
+    call('api_changePassword', [o, n], 'Updating password\u2026').then(function (r) {
+      saveToken(r.token); closeModal('modal-chpw'); toast('Password changed.', 'ok');
+      if (chpwForced) { chpwForced = false; go('list'); }
+    }).catch(function (e) { cpError(e.message); });
+  }
+
+  function showTemp(email, pw, title) {
+    $('temp-title').textContent = title; $('temp-email').textContent = email; $('temp-pw').textContent = pw;
+    openModal('modal-temp');
+  }
+  function copyTemp() {
+    var t = $('temp-pw').textContent;
+    var fallback = function () {
+      var r = document.createRange(); r.selectNodeContents($('temp-pw'));
+      var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      toast('Selected. Press Ctrl+C to copy.');
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(function () { toast('Copied.', 'ok'); }, fallback);
+    else fallback();
+  }
+  function resetUserPassword() {
+    askConfirm('Reset password', 'Issue a new temporary password for ' + editingEmail + '? Their current password stops working and they are signed out.', 'Reset').then(function (ok) {
+      if (!ok) return;
+      call('api_resetPassword', [editingEmail], 'Resetting\u2026').then(function (r) {
+        closeModal('modal-user'); loadUsers(); showTemp(r.email, r.tempPassword, 'Password reset');
+      }).catch(fail);
+    });
+  }
+
+  /* ------------------------------------ boot ----------------------------------- */
+  function wireLogin() {
+    $('login-form').addEventListener('submit', doLogin);
+    $('btn-show-pw').addEventListener('click', function () {
+      var f = $('login-password'), on = f.type === 'password';
+      f.type = on ? 'text' : 'password'; this.textContent = on ? 'Hide' : 'Show';
+    });
+  }
+
+  function wire() {
+    document.addEventListener('click', function (e) {
+      var nav = e.target.closest('[data-nav]');
+      if (nav) go(nav.getAttribute('data-nav'));
+      var close = e.target.closest('[data-close]');
+      if (close) { var m = close.closest('.modal'); if (m) m.hidden = true; }
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      qsa('.modal').forEach(function (m) {
+        if (m.hidden || (m.id === 'modal-chpw' && chpwForced)) return;
+        m.hidden = true; if (m.id === 'modal-confirm') resolveConfirm(false);
+      });
+    });
+    document.addEventListener('input', function (e) { if (e.target.classList) e.target.classList.remove('invalid'); });
+
+    $('ms-form').addEventListener('input', function () { S.dirty = true; });
+    $('ms-form').addEventListener('change', function () { S.dirty = true; });
+    $('ms-form').addEventListener('submit', function (e) { e.preventDefault(); });
+
+    // Auto-insert the slash while typing mm/yyyy
+    ['f-periodFrom', 'f-periodTo'].forEach(function (id) {
+      $(id).addEventListener('input', function (e) {
+        var v = this.value.replace(/[^\d\/]/g, '');
+        if (/^\d{2}$/.test(v) && e.inputType !== 'deleteContentBackward') v += '/';
+        this.value = v;
+      });
+    });
+
+    $('btn-new').addEventListener('click', function () { go('new'); });
+    $('sv-form').addEventListener('input', function () { S.dirty = true; });
+    $('sv-form').addEventListener('change', function () { S.dirty = true; });
+    $('sv-form').addEventListener('submit', function (e) { e.preventDefault(); });
+    $('btn-new-survey').addEventListener('click', function () { go('newsurvey'); });
+    $('btn-sv-back').addEventListener('click', function () { go('surveys'); });
+    $('btn-sv-refresh').addEventListener('click', loadSurveys);
+    $('sv-status').addEventListener('change', loadSurveys);
+    $('sv-search').addEventListener('input', function () { clearTimeout(S.searchTimer); S.searchTimer = setTimeout(loadSurveys, 350); });
+    $('btn-sv-add').addEventListener('click', function () { addSvRow(); });
+    $('btn-sv-save').addEventListener('click', saveSurvey);
+    $('btn-sv-sign').addEventListener('click', signSurvey);
+    $('btn-sv-delete').addEventListener('click', deleteSurvey);
+    $('btn-sv-print').addEventListener('click', previewSurveyPrint);
+    $('btn-sv-pdf').addEventListener('click', downloadSurveyPdf);
+    $('btn-sv-history').addEventListener('click', showSurveyHistory);
+    $('btn-clear-sv').addEventListener('click', function () { S.pads.survey.clear(); });
+    $('btn-back').addEventListener('click', function () { go('list'); });
+    $('btn-refresh').addEventListener('click', loadList);
+    $('list-status').addEventListener('change', loadList);
+    $('list-search').addEventListener('input', function () { clearTimeout(S.searchTimer); S.searchTimer = setTimeout(loadList, 350); });
+
+    $('btn-save').addEventListener('click', saveDraft);
+    $('btn-submit').addEventListener('click', submitForm);
+    $('btn-approve').addEventListener('click', approveForm);
+    $('btn-return').addEventListener('click', function () { $('return-remarks').value = ''; openModal('modal-return'); });
+    $('return-ok').addEventListener('click', returnForm);
+    $('btn-delete').addEventListener('click', deleteForm);
+    $('btn-print').addEventListener('click', previewPrint);
+    $('print-now').addEventListener('click', printNow);
+    $('btn-pdf').addEventListener('click', downloadPdf);
+    $('btn-history').addEventListener('click', showHistory);
+    $('btn-clear-prep').addEventListener('click', function () { S.pads.prep.clear(); });
+    $('btn-clear-appr').addEventListener('click', function () { S.pads.appr.clear(); });
+    ['prep', 'appr', 'sv'].forEach(function (w) {
+      $('btn-saved-' + w).addEventListener('click', function () { useSavedSignature(w); });
+      $('btn-keep-' + w).addEventListener('click', function () { keepSignature(w); });
+      $('btn-upload-' + w).addEventListener('click', function () { $('file-' + w).click(); });
+      $('file-' + w).addEventListener('change', function () { uploadSignature(w, this.files && this.files[0]); this.value = ''; });
+    });
+
+    $('confirm-ok').addEventListener('click', function () { resolveConfirm(true); });
+    $('confirm-cancel').addEventListener('click', function () { resolveConfirm(false); });
+
+    $('btn-add-user').addEventListener('click', function () { openUser(null); });
+    $('user-save').addEventListener('click', saveUser);
+    $('user-reset').addEventListener('click', resetUserPassword);
+    $('user-delete').addEventListener('click', deleteUserAccount);
+    $('btn-audit-refresh').addEventListener('click', loadAudit);
+    $('btn-audit-verify').addEventListener('click', verifyAudit);
+
+    $('btn-logout').addEventListener('click', logout);
+    $('btn-chpw').addEventListener('click', function () { openChpw(false); });
+    $('cp-save').addEventListener('click', saveChpw);
+    $('temp-copy').addEventListener('click', copyTemp);
+
+    window.addEventListener('beforeunload', function (e) { if (S.dirty) { e.preventDefault(); e.returnValue = ''; } });
+  }
+
+  function start() {
+    wireLogin();
+    saveToken(loadToken());
+    if (!S.token) { showLogin(''); return; }
+    boot().catch(function (e) { showDenied('The system could not start: ' + e.message + ' (If this is a new installation, the owner must run setup() in the Apps Script editor first.)'); });
+  }
+
+  start();
+})();
+</script>
+</body>
+</html>';   // ps://script.google.com/macros/s/XXXX/exec
   function run(name, args) {
     // Every call except sign-in carries the session token; the server decides who you are and what you may do.
     var a = name === 'api_login' ? (args || []) : [S.token].concat(args || []);
