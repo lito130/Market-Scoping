@@ -760,19 +760,27 @@ fieldset.roles{border:1px solid var(--line);border-radius:8px;margin:.3rem 0}
   function run(name, args) {
     // Every call except sign-in carries the session token; the server decides who you are and what you may do.
     var a = name === 'api_login' ? (args || []) : [S.token].concat(args || []);
+    var ctl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 60000);
     return fetch(API_URL, {
       method: 'POST',
       redirect: 'follow',
+      signal: ctl ? ctl.signal : undefined,
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ fn: name, args: a })
     }).then(function (res) {
+      clearTimeout(timer);
       if (!res.ok) throw new Error('Network error (' + res.status + ').');
       return res.json();
     }).then(function (j) {
       if (!j || j.ok !== true) throw new Error(String((j && j.error) || 'Unknown error.').replace(/^Error:\s*/, ''));
       return j.result;
     }, function (err) {
-      throw new Error(String((err && err.message) || err).replace(/^Error:\s*/, '') === 'Failed to fetch' ? 'Cannot reach the server. Check your connection.' : String((err && err.message) || err));
+      clearTimeout(timer);
+      var m = String((err && err.message) || err).replace(/^Error:\s*/, '');
+      if (err && err.name === 'AbortError') m = 'The server took too long to respond. Please try again.';
+      else if (m === 'Failed to fetch' || m.indexOf('JSON') !== -1 || m.indexOf('Unexpected token') !== -1) m = 'Cannot reach the server. Check the Apps Script deployment (Anyone access, latest version with doPost) and your connection.';
+      throw new Error(m);
     });
   }
   function busy(on, label) {
@@ -1749,8 +1757,15 @@ fieldset.roles{border:1px solid var(--line);border-radius:8px;margin:.3rem 0}
     wireLogin();
     saveToken(loadToken());
     if (!S.token) { showLogin(''); return; }
-    boot().catch(function (e) { showDenied('The system could not start: ' + e.message + ' (If this is a new installation, the owner must run setup() in the Apps Script editor first.)'); });
+    var guard = setTimeout(function () { if (!$('screen-loading').hidden) showLogin('The server is not responding. Please sign in again.', true); }, 15000);
+    boot().then(function () { clearTimeout(guard); }, function (e) {
+      clearTimeout(guard);
+      showLogin('Could not restore your session: ' + e.message, false);
+    });
   }
+  window.addEventListener('error', function (ev) {
+    if (!$('screen-loading').hidden) showDenied('Script error: ' + ev.message);
+  });
 
   start();
 })();
